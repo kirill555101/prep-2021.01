@@ -1,0 +1,53 @@
+image: gcc
+
+variables:
+  BIN_NAME: main.out
+
+stages:
+  - test_style
+  - build
+  - test_stage1
+  - test_stage2
+
+
+test_style:
+  stage: test_style
+  script:
+    - ./linters/run.sh
+
+
+build:
+  stage: build
+  script: 
+    - make
+  artifacts:
+    paths:
+      - ${BIN_NAME}
+
+
+test_stage1:
+  stage: test_stage1
+  script:
+    - ./btests/run.sh ./${BIN_NAME} --tests-path btests/testcases/stage1
+  when: manual
+
+test_stage1_mem:
+  stage: test_stage1
+  script:
+    - apt-get update && apt-get install -y valgrind
+    - ./btests/run.sh ./${BIN_NAME} --memcheck --tests-path btests/testcases/stage1
+  when: manual
+
+test_stage2:
+  stage: test_stage2
+  script:
+    - ./btests/run.sh ./${BIN_NAME} --tests-path btests/testcases/stage2
+  when: manual
+
+test_stage2_mem:
+  stage: test_stage2
+  script:
+    - apt-get update && apt-get install -y valgrind
+    - ./btests/run.sh ./${BIN_NAME} --memcheck --tests-path btests/testcases/stage2
+  when: manual
+
