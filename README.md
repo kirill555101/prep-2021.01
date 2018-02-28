@@ -43,7 +43,7 @@ Your identification has been saved in /tmp/test.
 Your public key has been saved in /tmp/test.pub.
 The key fingerprint is:
 SHA256:9Yf53peICFiHtsvlLTU+lnMidP9Vd7U7aWtSE9GWyIs p.bereznoy@msk-wifi-21fap7-p_berezhnoy-noname.mail.msk
-The key's randomart image is:
+The keys randomart image is:
 +---[RSA 2048]----+
 |            . . o|
 |             o oo|
