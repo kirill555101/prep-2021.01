@@ -21,6 +21,31 @@
 ### Members:
 ![alt text][members]
 
+### Локальные настройки GIT'а
+
+Просим вас исполнить следующие команды для конфигурирования вашего локального гита.
+
+Настройки принадлежности ваших коммитов:
+```bash
+$ git config --global user.name "Your Name Surname"
+$ git config --global user.email "your@e.mail"
+```
+
+Следующая команда необходима для того, чтобы пушить на гитлаб только текущую ветку.
+Необходимо **ВСЕМ**.
+```bash
+$ git config --global push.default current
+```
+
+Некоторые цветовые настройки. Будет красиво:
+```bash
+$ git config --global color.branch true
+$ git config --global color.interactive true
+$ git config --global color.diff true
+$ git config --global color.grep true
+$ git config --global color.status true
+```
+
 ## Выполнение
 Каждое задание находится в отдельной ветке с именем **hw-_num_**, где _num_ - номер задания.
 Описание задания находится в каждой ветке в *README.md*: его нужно выполнить, закоммитить и отправить на сервер.
@@ -33,6 +58,7 @@
 (например, **making-hw-_num_**, _num_ - номер задания) от ветки **hw-_num_**:
 ```bash
 $ git checkout hw-1
+$ pit push
 $ git checkout -b making-hw-1
 ```
 
