@@ -118,7 +118,7 @@ $ git config --global color.status true
 (например, **making-hw-_num_**, _num_ - номер задания) от ветки **hw-_num_**:
 ```bash
 $ git checkout hw-1
-$ pit push
+$ git push
 $ git checkout -b making-hw-1
 ```
 
