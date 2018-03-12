@@ -140,6 +140,8 @@ $ git checkout -b making-hw-1
 Лучше отвечайте на комментарии в MR. Чтобы преподаватель видел, что вы онлайн. Вас много, нам сложно мониторить когда чего вы
 поменяли в коде.
 
+[Правида сдачи и приёма ДЗ](https://gitlab.com/snippets/1703592)
+
 ### Merge Request:
 ![alt text][merge_request_1]
 ![alt text][merge_request_2]
