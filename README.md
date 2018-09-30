@@ -1,10 +1,9 @@
 # Подготовительная программа на С/С++
 ## Подготовка
 Необходимо форкнуть репу, сделать её приватной и добавить следующих пользователей:
-1. **mrGexogen**
-2. **pberejnoy**
-3. **Antonboom**
-4. **grechkin-pogrebnyakov**
+1. **mrGexogen** - Serg Titaevskiy
+2. **pberejnoy** - Pavel
+3. **smirnov_vs** - Vladislav Smirnov
 
 с правами **Developer**.
 
