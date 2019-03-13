@@ -11,6 +11,7 @@
 [fork]: images/fork.png "Fork"
 [permissions]: images/permissions.png "Permissions"
 [members]: images/members.png "Members"
+[clone]: images/clone.png "Clone"
 [merge_request_1]: images/merge_request_1.png "Merge Request 1"
 [merge_request_2]: images/merge_request_2.png "Merge Request 2"
 
@@ -79,6 +80,17 @@ p.bereznoy@msk-wifi-21fap7-p_berezhnoy-noname.mail.msk
 ![alt text][ssh_keys_1]
 ![alt text][ssh_keys_2]
 
+### Клонирование репозитория
+
+Для того, чтобы получить копию своего репозитория на компьютер, сначала скопируйте его URL (Clone with SSH не потребует ввода имени пользователя и пароля GitLab, в отличие от Clone with HTTPS):
+
+![alt text][clone]
+
+Затем воспользуйтесь командой:
+```bash
+$ git clone "URL"
+```
+
 ### Локальные настройки GIT'а
 
 Просим вас исполнить следующие команды для конфигурирования вашего локального гита.
@@ -138,6 +150,26 @@ $ git checkout -b making-hw-1
 ### Merge Request:
 ![alt text][merge_request_1]
 ![alt text][merge_request_2]
+
+## Получение следующих дз
+
+Для того, чтобы новые дз появлялись в вашем форке, воспользуйтесь ручным зеркалированием.
+
+Добавьте преподавательский репозиторий в список удаленных репозиториев (делается один раз):
+```bash
+$ git remote add upstream "URL"
+```
+
+Для добавления всех изменений в локальный репозиторий:
+```bash
+$ git fetch --all
+```
+
+Для добавления ветки в ваш репозиторий:
+```bash
+$ git checkout hw-num
+$ git push origin
+```
 
 ## Дополнения
 
