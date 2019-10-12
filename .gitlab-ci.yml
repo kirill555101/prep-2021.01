@@ -1,0 +1,60 @@
+image: gcc
+
+variables:
+  BIN_NAME: tests.out
+
+  VALGRIND_LOG: "valgrind.log"
+  NO_LOST_PATTERN: "All heap blocks were freed -- no leaks are possible"
+  NO_ERROR_PATTERN: "ERROR SUMMARY: 0 errors"
+
+stages:
+  - test_style
+  - build
+  - test
+  - test_mem
+  - test_extra
+  - test_extra_mem
+
+test_style:
+  stage: test_style
+  script:
+    - ./linters/run.sh
+
+build:
+  stage: build
+  script:
+    - make
+  artifacts:
+    paths:
+      - ${BIN_NAME}
+
+test:
+  stage: test
+  script:
+    - ./${BIN_NAME}
+
+test_mem:
+  stage: test_mem
+  script:
+    - apt-get update && apt-get install -y valgrind
+    - valgrind --tool=memcheck --leak-check=summary --log-file=${VALGRIND_LOG} ./${BIN_NAME}
+    - export NO_LOST=$(grep "${NO_LOST_PATTERN}" ${VALGRIND_LOG})
+    - export NO_ERROR=$(grep "${NO_ERROR_PATTERN}" ${VALGRIND_LOG})
+    - if [ -z "${NO_LOST}" ] || [ -z "${NO_ERROR}" ]; then cat ${VALGRIND_LOG}; exit 1; fi
+
+test_extra:
+  stage: test_extra
+  script:
+    - ./${BIN_NAME} --with-extra
+  when: manual
+  allow_failure: false
+
+test_extra_mem:
+  stage: test_extra_mem
+  script:
+    - apt-get update && apt-get install -y valgrind
+    - valgrind --tool=memcheck --leak-check=summary --log-file=${VALGRIND_LOG} ./${BIN_NAME} --with-extra
+    - export NO_LOST=$(grep "${NO_LOST_PATTERN}" ${VALGRIND_LOG})
+    - export NO_ERROR=$(grep "${NO_ERROR_PATTERN}" ${VALGRIND_LOG})
+    - if [ -z "${NO_LOST}" ] || [ -z "${NO_ERROR}" ]; then cat ${VALGRIND_LOG}; exit 1; fi
+  when: on_success
