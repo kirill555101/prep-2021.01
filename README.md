@@ -1,7 +1,7 @@
 # Подготовительная программа на С/С++
 ## Подготовка
 Необходимо форкнуть репу, сделать её приватной и добавить следующих пользователей:
-> indiagolph99 Tony_Sysoev phantasy tigon4ik piklin Kislukhaegor P00mP00m Falcon22 CheerfulMushroom UsatiyNyan myjupyter Anton-Rampage denis96z chtvrv alexandr_289 nickeskov mrGexogen pberejnoy vbabayan
+> aleksn7 phantasy The_Psina n_shch nickeskov muradyan_a P00mP00m myjupyter Anton-Rampage alexandr_289 tigon4ik ArtemSarmini thefarcoad vendroid Rzhevsky kislukhaegor m.lozhechko mrGexogen vbabayan kirimedia
 
 с правами **Developer**.
 
