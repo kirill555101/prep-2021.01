@@ -3,9 +3,9 @@ HDRS_DIR = project/include
 
 # XXX: Don't forget backslash at the end of any line except the last one
 SRCS = \
-       project/src/main.c \
-       project/src/utils.c \
-	   project/src/func.c
+			project/src/main.c \
+      project/src/utils.c \
+	   	project/src/func.c
 
 .PHONY: all clean
 
