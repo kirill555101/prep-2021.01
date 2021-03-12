@@ -2,6 +2,7 @@
 #include <stdio.h>
 
 #include "utils.h"
+#include "func.h"
 
 #define ERR_ARGS_COUNT (-1)
 #define ERR_WRONG_FLG (-2)
@@ -10,21 +11,6 @@
 #define TST_FOO_IMPL    2
 #define TST_MOD_IMPL    3
 
-
-/* NOTE(stitaevskiy):
- * We use `atoi` function just for simplification and code reducing.
- * This function doesn't report conversation errors.
- * For safety program we recommend using `strtol` and its analogs.
- * (See `man atoi` and `man strtol` for more info).
- *
- * const char str_num[] = "1234";
- * char* end = NULL;
- * int val = (int) strtol(str_num, &end, 0);
- * if (end != '\0') {
- *     //ERROR
- * }
- *
- * */
 
 int main(int argc, const char** argv) {
     if (argc < 3) {
@@ -45,22 +31,19 @@ int main(int argc, const char** argv) {
             if (argc != 4) {
                 return ERR_ARGS_COUNT;
             }
-            /* Comment to prevent `unused parameter` error
+
             int base = atoi(data);
             int pow =  atoi(argv[3]);
-            int res = custom_pow(base, pow);    // TODO: Implement me
+            int res = custom_pow(base, pow);
 
             printf("%i\n", res);
-            */
             break;
         }
         case TST_MOD_IMPL: {
-            // Comment for prevent `unused variable` error
-            // int num = atoi(data);
+            int num = atoi(data);
+            int res = is_prime_number(num);
 
-            // TODO: Print to stdout `1` if `num` is prime number and `0` otherwise
-            // This function MUST be implemented in
-            // a separate C-module (not in `main` or `utils` module)
+            printf("%i\n", res);
             break;
         }
         default: {
