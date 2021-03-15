@@ -9,6 +9,7 @@ stages:
   - build
   - test_bin
   - test_mem
+  - my_test
 
 test_style:
   stage: test_style
@@ -35,6 +36,6 @@ test_mem:
     - ./btests/run.sh ./${BIN_NAME} --memcheck
 
 my_test:
-  stage: mys_test
+  stage: my_test
   script:
     - ./${TEST_NAME}
