@@ -2,6 +2,7 @@ image: gcc
 
 variables:
   BIN_NAME: main.out
+  TEST_NAME: test.out
 
 stages:
   - test_style
@@ -32,3 +33,8 @@ test_mem:
   script:
     - apt-get update && apt-get install -y valgrind
     - ./btests/run.sh ./${BIN_NAME} --memcheck
+
+my_test:
+  stage: mys_test
+  script:
+    - ./${TEST_NAME}

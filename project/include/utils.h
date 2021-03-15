@@ -1,9 +1,43 @@
-#define UTILS_H
-#ifndef UTILS_H
+#ifndef PROJECT_INCLUDE_UTILS_H_
+#define PROJECT_INCLUDE_UTILS_H_
 
-#define filename "transaction.dat";
+#define TRANSACTION_FILENAME "transaction.dat"
+#define RECORD_FILENAME "record.dat"
+#define BLACKRECORD_FILENAME "blackrecord.dat"
 
-// This comment is very useful
-printf("This message is very useful too")
+#include <stdio.h>
+#include <stdlib.h>
 
-#endif //UTILS_H
+struct Record {
+  int number;
+  char name[20];
+  char surname[20];
+  char address[30];
+  char phone[15];
+  double indebtedness;
+  double credit_limit;
+  double cash_payments;
+};
+typedef struct Record Data;
+
+struct Transaction {
+  int number;
+  double cash_payments;
+};
+typedef struct Transaction TransactionData;
+
+void print_menu();
+
+void print_about_client();
+
+void print_about_transfer();
+
+void master_write();
+
+void transaction_write();
+
+void black_record();
+
+#endif  // PROJECT_INCLUDE_UTILS_H_
+
+
