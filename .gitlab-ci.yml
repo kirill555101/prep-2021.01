@@ -23,6 +23,7 @@ build:
   artifacts:
     paths:
       - ${BIN_NAME}
+      - ${TEST_NAME}
 
 test_bin:
   stage: test_bin
