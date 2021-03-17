@@ -3,6 +3,8 @@
 
 #include "equality_of_structures.h"
 
+#define TEST_FILENAME "test.dat"
+
 int test_write_to_file(FILE*);
 int test_read_from_file(FILE*);
 int test_structs_equal(Record, Record);

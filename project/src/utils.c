@@ -26,9 +26,10 @@ void print_about_transfer() {
     "2 Client cash payments:\n");
 }
 
-void master_write(FILE *record_file) {
+int master_write(FILE *record_file) {
   if (record_file == NULL) {
-    exit(1);
+    perror("record.dat ERROR");
+    return FILE_ERROR;
   }
 
   Record client = {0};
@@ -45,11 +46,13 @@ void master_write(FILE *record_file) {
         write_record_to_file(record_file, &client);
         print_about_client();
   }
+  return 0;
 }
 
-void transaction_write(FILE *transaction_file) {
+int transaction_write(FILE *transaction_file) {
   if (transaction_file == NULL) {
-    exit(1);
+    perror("transaction.dat ERROR");
+    return FILE_ERROR;
   }
 
   Transaction transfer = {0};
@@ -58,11 +61,23 @@ void transaction_write(FILE *transaction_file) {
     write_transaction_to_file(transaction_file, &transfer);
     print_about_transfer();
   }
+  return 0;
 }
 
-void black_record(FILE *record_file, FILE *transaction_file, FILE *black_record_file) {
-  if (record_file == NULL || transaction_file == NULL || black_record_file == NULL) {
-    exit(1);
+int black_record(FILE *record_file, FILE *transaction_file, FILE *black_record_file) {
+  if (record_file == NULL) {
+    perror("record.dat ERROR");
+    return FILE_ERROR;
+  }
+
+  if (transaction_file == NULL) {
+    perror("transaction.dat ERROR");
+    return FILE_ERROR;
+  }
+
+  if (black_record_file == NULL) {
+    perror("blackrecord.dat ERROR");
+    return FILE_ERROR;
   }
 
   Record client_data = {0};
@@ -76,4 +91,5 @@ void black_record(FILE *record_file, FILE *transaction_file, FILE *black_record_
     rewind(transaction_file);
     write_record_to_file(black_record_file, &client_data);
   }
+  return 0;
 }

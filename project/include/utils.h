@@ -30,11 +30,11 @@ void print_about_client();
 
 void print_about_transfer();
 
-void master_write();
+int master_write();
 
-void transaction_write();
+int transaction_write();
 
-void black_record();
+int black_record();
 
 #endif  // PROJECT_INCLUDE_UTILS_H_
 
