@@ -26,7 +26,11 @@ void print_about_transfer() {
     "2 Client cash payments:\n");
 }
 
-void master_write() {
+void master_write(FILE *record_file) {
+  if (record_file == NULL) {
+    exit(1);
+  }
+
   Record client = {0};
   print_about_client();
   while (scanf("%d%10s%10s%10s%10s%lf%lf%lf",
@@ -38,61 +42,38 @@ void master_write() {
       &client.indebtedness,
       &client.credit_limit,
       &client.cash_payments) == ELEMENTS_IN_RECORD) {
-        write_record_to_file(RECORD_FILENAME, "a+", &client);
+        write_record_to_file(record_file, &client);
         print_about_client();
   }
 }
 
-void transaction_write() {
+void transaction_write(FILE *transaction_file) {
+  if (transaction_file == NULL) {
+    exit(1);
+  }
+
   Transaction transfer = {0};
   print_about_transfer();
   while (scanf("%d %lf", &transfer.number, &transfer.cash_payments) == ELEMENTS_IN_TRANSACTION) {
-    write_transaction_to_file(TRANSACTION_FILENAME, "a+", &transfer);
+    write_transaction_to_file(transaction_file, &transfer);
     print_about_transfer();
   }
 }
 
-void black_record() {
-  FILE *record_file;
-  FILE  *transaction_file;
-  FILE *black_record_file;
-  record_file = fopen(RECORD_FILENAME, "r");
-  if (record_file == NULL) {
-    perror("FAILURE: File record.dat is not found");
-    exit(1);
-  }
-
-  transaction_file = fopen(TRANSACTION_FILENAME, "r");
-  if (transaction_file == NULL) {
-    perror("FAILURE: File transaction.dat is not found");
-    fclose(record_file);
-    exit(1);
-  }
-
-  black_record_file = fopen(BLACKRECORD_FILENAME, "w");
-  if (black_record_file == NULL) {
-    perror("FAILURE: File black_record.dat is not found");
-    fclose(record_file);
-    fclose(transaction_file);
+void black_record(FILE *record_file, FILE *transaction_file, FILE *black_record_file) {
+  if (record_file == NULL || transaction_file == NULL || black_record_file == NULL) {
     exit(1);
   }
 
   Record client_data = {0};
   Transaction transfer = {0};
-  while (read_from_file(record_file, &client_data) == 0) {
-    while (fscanf(transaction_file,
-        "%d %lf",
-        &transfer.number,
-        &transfer.cash_payments) == ELEMENTS_IN_TRANSACTION) {
-          if (client_data.number == transfer.number && transfer.cash_payments != 0) {
-            client_data.credit_limit += transfer.cash_payments;
-          }
+  while (read_record_from_file(record_file, &client_data) == 0) {
+    while (read_transaction_from_file(transaction_file, &transfer) == 0) {
+      if (client_data.number == transfer.number && transfer.cash_payments != 0) {
+        client_data.credit_limit += transfer.cash_payments;
+      }
     }
-    write_to_file(black_record_file, &client_data);
     rewind(transaction_file);
+    write_record_to_file(black_record_file, &client_data);
   }
-
-  fclose(record_file);
-  fclose(transaction_file);
-  fclose(black_record_file);
 }

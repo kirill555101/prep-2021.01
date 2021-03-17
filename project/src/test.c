@@ -2,18 +2,23 @@
 
 int main() {
   const char *test_filename = "test.dat";
+  FILE* test_file = fopen(test_filename, "w+");
   int code;
 
-  if ((code = test_write_to_file(test_filename)) != 0) {
+  if ((code = test_write_to_file(test_file)) != 0) {
     puts("test1 FAILURE");
+    fclose(test_file);
     return code;
   }
   puts("test1 SUCCESS");
 
-  if ((code = test_read_from_file(test_filename)) != 0) {
+  rewind(test_file);
+  if ((code = test_read_from_file(test_file)) != 0) {
     puts("test2 FAILURE");
+    fclose(test_file);
     return code;
   }
+  fclose(test_file);
   puts("test2 SUCCESS");
 
   Record first_struct = {

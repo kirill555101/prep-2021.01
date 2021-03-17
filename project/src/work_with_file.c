@@ -1,17 +1,6 @@
 #include "work_with_file.h"
 
-void write_record_to_file(const char* filename, const char* mode, Record *struct_write) {
-  FILE *file = fopen(filename, mode);
-  if (file == NULL) {
-    exit(1);
-  }
-
-  write_to_file(file, struct_write);
-  fclose(file);
-}
-
-void write_transaction_to_file(const char* filename, const char* mode, Transaction *transaction_write) {
-  FILE *file = fopen(filename, mode);
+void write_transaction_to_file(FILE *file, Transaction *transaction_write) {
   if (file == NULL) {
     exit(1);
   }
@@ -20,10 +9,27 @@ void write_transaction_to_file(const char* filename, const char* mode, Transacti
     "%-3d%-6.2f\n",
     transaction_write->number,
     transaction_write->cash_payments);
-  fclose(file);
 }
 
-void write_to_file(FILE *file, Record *struct_write) {
+int read_transaction_from_file(FILE *file, Transaction *transaction_read) {
+  if (file == NULL) {
+    exit(1);
+  }
+
+  while (fscanf(file,
+      "%d %lf",
+      &transaction_read->number,
+      &transaction_read->cash_payments) == ELEMENTS_IN_TRANSACTION) {
+        return 0;
+  }
+  return -1;
+}
+
+void write_record_to_file(FILE *file, Record *struct_write) {
+  if (file == NULL) {
+    exit(1);
+  }
+
   fprintf(file,
     "%-12d%-11s%-11s%-16s%20s%12.2f%12.2f%12.2f\n",
     struct_write->number,
@@ -36,7 +42,11 @@ void write_to_file(FILE *file, Record *struct_write) {
     struct_write->cash_payments);
 }
 
-int read_from_file(FILE *file, Record *struct_read) {
+int read_record_from_file(FILE *file, Record *struct_read) {
+  if (file == NULL) {
+    exit(1);
+  }
+
   while (fscanf(file,
       "%d%10s%10s%10s%10s%lf%lf%lf",
       &struct_read->number,
