@@ -1,6 +1,6 @@
 #include "equality_of_structures.h"
 
-int are_structs_equal(Data expected_client_data, Data got_client_data) {
+int structs_equal(Record expected_client_data, Record got_client_data) {
   double eps = 1e-2;
   if (expected_client_data.number == got_client_data.number &&
     strcmp(expected_client_data.name, got_client_data.name) == 0 &&

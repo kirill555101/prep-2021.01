@@ -3,8 +3,12 @@
 
 #include "utils.h"
 
-void write_to_file(FILE*, Data*);
+#define ELEMENTS_IN_RECORD 8
+#define ELEMENTS_IN_TRANSACTION 2
 
-int read_from_file(FILE*, Data*);
+void write_record_to_file(const char*, const char*, Record*);
+void write_transaction_to_file(const char*, const char*, Transaction*);
+void write_to_file(FILE*, Record*);
+int read_from_file(FILE*, Record*);
 
 #endif  // PROJECT_INCLUDE_WORK_WITH_FILE_H_

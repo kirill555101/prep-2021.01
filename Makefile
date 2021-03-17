@@ -11,6 +11,7 @@ HDRS_DIR_TEST = project/include
 
 SRCS_TEST = \
        project/src/test.c \
+       project/src/tests.c \
        project/src/work_with_file.c \
        project/src/equality_of_structures.c
 

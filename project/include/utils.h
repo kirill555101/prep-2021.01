@@ -8,7 +8,7 @@
 #include <stdio.h>
 #include <stdlib.h>
 
-struct Record {
+typedef struct {
   int number;
   char name[20];
   char surname[20];
@@ -17,14 +17,12 @@ struct Record {
   double indebtedness;
   double credit_limit;
   double cash_payments;
-};
-typedef struct Record Data;
+} Record;
 
-struct Transaction {
+typedef struct Transaction {
   int number;
   double cash_payments;
-};
-typedef struct Transaction TransactionData;
+} Transaction;
 
 void print_menu();
 
