@@ -19,21 +19,16 @@ typedef struct {
   double cash_payments;
 } Record;
 
-typedef struct Transaction {
+typedef struct {
   int number;
   double cash_payments;
 } Transaction;
 
 void print_menu();
-
 void print_about_client();
-
 void print_about_transfer();
-
 int master_write();
-
 int transaction_write();
-
 int black_record();
 
 #endif  // PROJECT_INCLUDE_UTILS_H_
