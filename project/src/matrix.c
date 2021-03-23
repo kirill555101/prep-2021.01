@@ -235,8 +235,8 @@ int det(const Matrix* matrix, double* val) {
   double eps = 1e-9, *temp;
   for (size_t i = 0, k = 0; i < size; i++) {
     k = i;
-	  for (size_t j = i + 1; j < size; j++) {
-		  if (fabs(new_matrix->data[j][i]) > fabs(new_matrix->data[k][i])) {
+    for (size_t j = i + 1; j < size; j++) {
+      if (fabs(new_matrix->data[j][i]) > fabs(new_matrix->data[k][i])) {
         k = j;
       }
     }
@@ -251,13 +251,13 @@ int det(const Matrix* matrix, double* val) {
     new_matrix->data[i] = new_matrix->data[k];
     new_matrix->data[k] = temp;
 
-	  if (i != k) {
-		  *val = 0 - *val;
+    if (i != k) {
+      *val = 0 - *val;
     }
 
 	  *val *= new_matrix->data[i][i];
-	  for (size_t j = i  + 1; j < size ; j++) {
-		  new_matrix->data[i][j] /= new_matrix->data[i][i];
+    for (size_t j = i  + 1; j < size ; j++) {
+      new_matrix->data[i][j] /= new_matrix->data[i][i];
     }
 
     for (size_t j = 0; j < size; j++) {
