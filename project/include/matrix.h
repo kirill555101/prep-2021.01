@@ -4,6 +4,12 @@
 #include <stddef.h>
 #include <stdlib.h>
 #include <stdio.h>
+#include <math.h>
+
+typedef enum {
+  success,
+  error
+} RESULT;
 
 typedef struct {
   double **data;

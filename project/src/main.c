@@ -1,154 +1,183 @@
 #include <stdio.h>
 #include "matrix.h"
 
-#define CREATE_MATRIX_FROM_FILE_ERROR 1
-#define CREATE_MATRIX_ERROR 2
-#define GET_ROWS_ERROR 3
-#define GET_COLS_ERROR 4
-#define GET_ELEM_ERROR 5
-#define SET_ELEM_ERROR 6
-#define MUL_SCALAR_ERROR 7
-#define TRANSP_ERROR 8
-#define SUM_ERROR 9
-#define SUB_ERROR 10
-#define MUL_ERROR 11
-#define DET_ERROR 12
-#define ADJ_ERROR 13
-#define INV_ERROR 14
+typedef enum {
+    create_matrix_from_file_error = 1,
+    create_matrix_error,
+    get_rows_error,
+    get_cols_error,
+    get_elem_error,
+    set_elem_error,
+    mul_scalar_error,
+    transp_error,
+    sum_error,
+    sub_error,
+    mul_error,
+    det_error,
+    adj_error,
+    inv_error
+} ERROR;
 
 #define TEST_FILENAME "test.txt"
 
 int main() {
     Matrix* first_matrix = create_matrix_from_file(TEST_FILENAME);
     if (first_matrix == NULL) {
-        puts("FAILURE create_matrix_from_file");
-        return CREATE_MATRIX_FROM_FILE_ERROR;
+        fprintf(stderr, "FAILURE create_matrix_from_file");
+        return create_matrix_from_file_error;
     }
-    puts("SUCCESS create_matrix_from_file");
+    fprintf(stdin, "SUCCESS create_matrix_from_file");
 
     Matrix* second_matrix = create_matrix(4, 4);
     if (second_matrix == NULL) {
-        puts("FAILURE create_matrix");
-        return CREATE_MATRIX_ERROR;
+        fprintf(stderr, "FAILURE create_matrix");
+        free_matrix(first_matrix);
+        return create_matrix_error;
     }
-    puts("SUCCESS create_matrix");
+    fprintf(stdin, "SUCCESS create_matrix");
 
     size_t rows, cols;
     if (get_rows(first_matrix, &rows) != 0) {
-        puts("FAILURE get_rows");
-        return GET_ROWS_ERROR;
+        fprintf(stderr, "FAILURE get_rows");
+        free_matrix(first_matrix);
+        free_matrix(second_matrix);
+        return get_rows_error;
     }
-    puts("SUCCESS get_rows");
+    fprintf(stdin, "SUCCESS get_rows");
 
-    if (get_rows(first_matrix, &cols) != 0) {
-        puts("FAILURE get_cols");
-        return GET_COLS_ERROR;
+    if (get_cols(first_matrix, &cols) != 0) {
+        fprintf(stderr, "FAILURE get_cols");
+        free_matrix(first_matrix);
+        free_matrix(second_matrix);
+        return get_cols_error;
     }
-    puts("SUCCESS get_cols");
+    fprintf(stdin, "SUCCESS get_cols");
 
     double val;
     if (get_elem(second_matrix, 2, 3, &val) != 0) {
-        puts("FAILURE get_elem");
-        return GET_ELEM_ERROR;
+        fprintf(stderr, "FAILURE get_elem");
+        free_matrix(first_matrix);
+        free_matrix(second_matrix);
+        return get_elem_error;
     }
-    puts("SUCCESS get_elem");
+    fprintf(stdin, "SUCCESS get_elem");
 
     if (set_elem(second_matrix, 1, 4, val) != 0) {
-        puts("FAILURE set_elem");
-        return SET_ELEM_ERROR;
+        fprintf(stderr, "FAILURE set_elem");
+        free_matrix(first_matrix);
+        free_matrix(second_matrix);
+        return set_elem_error;
     }
-    puts("SUCCESS set_elem");
+    fprintf(stdin, "SUCCESS set_elem");
 
     Matrix* muled_on_scalar_matrix = mul_scalar(second_matrix, 5);
     if (muled_on_scalar_matrix == NULL) {
-        puts("FAILURE mul_scalar");
-        return MUL_SCALAR_ERROR;
+        fprintf(stderr, "FAILURE mul_scalar");
+        free_matrix(first_matrix);
+        free_matrix(second_matrix);
+        return mul_scalar_error;
     }
-    puts("SUCCESS mul_scalar");
+    fprintf(stdin, "SUCCESS mul_scalar");
 
     Matrix* transposed_matrix = transp(second_matrix);
     if (transposed_matrix != NULL) {
-        puts("FAILURE transp");
-        return TRANSP_ERROR;
+        fprintf(stderr, "FAILURE transp");
+        free_matrix(first_matrix);
+        free_matrix(second_matrix);
+        free_matrix(muled_on_scalar_matrix);
+        return transp_error;
     }
-    puts("SUCCESS transp");
+    fprintf(stdin, "SUCCESS transp");
 
     Matrix* summed_matrix = sum(first_matrix, second_matrix);
     if (summed_matrix == NULL) {
-        puts("FAILURE sum");
-        return SUM_ERROR;
+        fprintf(stderr, "FAILURE sum");
+        free_matrix(first_matrix);
+        free_matrix(second_matrix);
+        free_matrix(muled_on_scalar_matrix);
+        free_matrix(transposed_matrix);
+        return sum_error;
     }
-    puts("SUCCESS sum");
+    fprintf(stdin, "SUCCESS sum");
 
     Matrix* subbed_matrix = sub(first_matrix, second_matrix);
     if (subbed_matrix == NULL) {
-        puts("FAILURE sub");
-        return SUB_ERROR;
+        fprintf(stderr, "FAILURE sub");
+        free_matrix(first_matrix);
+        free_matrix(second_matrix);
+        free_matrix(muled_on_scalar_matrix);
+        free_matrix(transposed_matrix);
+        free_matrix(summed_matrix);
+        return sub_error;
     }
-    puts("SUCCESS sub");
+    fprintf(stdin, "SUCCESS sub");
 
     Matrix* mulled_matrix = mul(first_matrix, second_matrix);
     if (mulled_matrix == NULL) {
-        puts("FAILURE mul");
-        return MUL_ERROR;
+        fprintf(stderr, "FAILURE mul");
+        free_matrix(first_matrix);
+        free_matrix(second_matrix);
+        free_matrix(muled_on_scalar_matrix);
+        free_matrix(transposed_matrix);
+        free_matrix(summed_matrix);
+        free_matrix(subbed_matrix);
+        return mul_error;
     }
-    puts("SUCCESS mul");
+    fprintf(stdin, "SUCCESS mul");
 
     if (det(first_matrix, &val) != 0) {
-        puts("FAILURE det");
-        return DET_ERROR;
+        fprintf(stderr, "FAILURE det");
+        free_matrix(first_matrix);
+        free_matrix(second_matrix);
+        free_matrix(muled_on_scalar_matrix);
+        free_matrix(transposed_matrix);
+        free_matrix(summed_matrix);
+        free_matrix(subbed_matrix);
+        free_matrix(mulled_matrix);
+        return det_error;
     }
-    puts("SUCCESS det");
-    printf("%f\n", val);
+    fprintf(stdin, "SUCCESS det");
 
     Matrix* third_matrix = create_matrix_from_file(TEST_FILENAME);
-
-    for (size_t i = 0; i < rows; i++) {
-        for (size_t j = 0; j < cols; j++) {
-            printf("%10.4f\t", third_matrix->data[i][j]);
-        }
-        printf("\n");
-    }
-    printf("\n");
-
     Matrix* adjointed_matrix = adj(third_matrix);
     if (adjointed_matrix == NULL) {
-        puts("FAILURE adj");
-        return ADJ_ERROR;
+        fprintf(stderr, "FAILURE adj");
+        free_matrix(first_matrix);
+        free_matrix(second_matrix);
+        free_matrix(muled_on_scalar_matrix);
+        free_matrix(transposed_matrix);
+        free_matrix(summed_matrix);
+        free_matrix(subbed_matrix);
+        free_matrix(mulled_matrix);
+        free_matrix(third_matrix);
+        return adj_error;
     }
-    puts("SUCCESS adj");
-
-    for (size_t i = 0; i < rows; i++) {
-        for (size_t j = 0; j < cols; j++) {
-            printf("%10.4f\t", adjointed_matrix->data[i][j]);
-        }
-        printf("\n");
-    }
-    printf("\n");
+    fprintf(stdin, "SUCCESS adj");
 
     Matrix* inverted_matrix = inv(third_matrix);
     if (inverted_matrix == NULL) {
-        puts("FAILURE inv");
-        return INV_ERROR;
+        fprintf(stderr, "FAILURE inv");
+        free_matrix(first_matrix);
+        free_matrix(second_matrix);
+        free_matrix(muled_on_scalar_matrix);
+        free_matrix(transposed_matrix);
+        free_matrix(summed_matrix);
+        free_matrix(subbed_matrix);
+        free_matrix(mulled_matrix);
+        free_matrix(third_matrix);
+        free_matrix(adjointed_matrix);
+        return inv_error;
     }
-    puts("SUCCESS inv");
-
-    for (size_t i = 0; i < rows; i++) {
-        for (size_t j = 0; j < cols; j++) {
-            printf("%10.4f\t", inverted_matrix->data[i][j]);
-        }
-        printf("\n");
-    }
-    printf("\n");
+    fprintf(stdin, "SUCCESS inv");
 
     free_matrix(first_matrix);
     free_matrix(second_matrix);
-    free_matrix(third_matrix);
     free_matrix(muled_on_scalar_matrix);
     free_matrix(transposed_matrix);
     free_matrix(summed_matrix);
     free_matrix(subbed_matrix);
     free_matrix(mulled_matrix);
+    free_matrix(third_matrix);
     free_matrix(adjointed_matrix);
     free_matrix(inverted_matrix);
 
