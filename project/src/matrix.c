@@ -242,8 +242,8 @@ int det(const Matrix* matrix, double* val) {
     }
 
 	  if (fabs(new_matrix->data[k][i]) < eps) {
-		  *val = 0;
-		  free_matrix(new_matrix);
+      *val = 0;
+      free_matrix(new_matrix);
       return success;
 	  }
 
@@ -260,10 +260,10 @@ int det(const Matrix* matrix, double* val) {
 		  new_matrix->data[i][j] /= new_matrix->data[i][i];
     }
 
-	  for (size_t j = 0; j < size; j++) {
-		  if (j != i && fabs(new_matrix->data[j][i]) > eps) {
-			  for (size_t k = i + 1; k < size; k++) {
-				  new_matrix->data[j][k] -= new_matrix->data[i][k] * new_matrix->data[j][i];
+    for (size_t j = 0; j < size; j++) {
+      if (j != i && fabs(new_matrix->data[j][i]) > eps) {
+        for (size_t k = i + 1; k < size; k++) {
+          new_matrix->data[j][k] -= new_matrix->data[i][k] * new_matrix->data[j][i];
         }
       }
     }
