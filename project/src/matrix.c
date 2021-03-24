@@ -22,6 +22,7 @@ Matrix* create_matrix_from_file(const char* path_file) {
     for (size_t j = 0; j < cols; j++) {
       if (fscanf(file, "%lf", &new_matrix->data[i][j]) != 1) {
         fclose(file);
+        free_matrix(new_matrix);
         return NULL;
       }
     }
@@ -32,7 +33,7 @@ Matrix* create_matrix_from_file(const char* path_file) {
 }
 
 Matrix* create_matrix(size_t rows, size_t cols) {
-  Matrix* new_matrix = malloc(sizeof(Matrix));
+  Matrix* new_matrix = calloc(1, sizeof(Matrix));
   if (new_matrix == NULL) {
     return NULL;
   }
@@ -59,7 +60,7 @@ Matrix* create_matrix(size_t rows, size_t cols) {
 
 int free_matrix(Matrix *matrix) {
   if (matrix == NULL) {
-    return error;
+    return EXIT_FAILURE;
   }
 
   for (size_t i = 0; i < matrix->rows; i++) {
@@ -73,47 +74,47 @@ int free_matrix(Matrix *matrix) {
   }
 
   free(matrix);
-  return success;
+  return EXIT_SUCCESS;
 }
 
 int get_rows(const Matrix* matrix, size_t* rows) {
   if (matrix == NULL || rows == NULL) {
-    return error;
+    return EXIT_FAILURE;
   }
 
   *rows = matrix->rows;
 
-  return success;
+  return EXIT_SUCCESS;
 }
 
 int get_cols(const Matrix* matrix, size_t* cols) {
   if (matrix == NULL || cols == NULL) {
-    return error;
+    return EXIT_FAILURE;
   }
 
   *cols = matrix->cols;
 
-  return success;
+  return EXIT_SUCCESS;
 }
 
 int get_elem(const Matrix* matrix, size_t row, size_t col, double* val) {
-  if (matrix == NULL || row > matrix->rows - 1 || col > matrix->cols || val == NULL) {
-    return error;
+  if (matrix == NULL || row > matrix->rows - 1 || col > matrix->cols - 1 || val == NULL) {
+    return EXIT_FAILURE;
   }
 
   *val = matrix->data[row][col];
 
-  return success;
+  return EXIT_SUCCESS;
 }
 
 int set_elem(Matrix* matrix, size_t row, size_t col, double val) {
-  if (matrix == NULL || row > matrix->rows - 1 || col > matrix->cols) {
-    return error;
+  if (matrix == NULL || row > matrix->rows - 1 || col > matrix->cols - 1) {
+    return EXIT_FAILURE;
   }
 
   matrix->data[row][col] = val;
 
-  return success;
+  return EXIT_SUCCESS;
 }
 
 Matrix* mul_scalar(const Matrix* matrix, double val) {
@@ -216,12 +217,13 @@ Matrix* mul(const Matrix* l, const Matrix* r) {
 
 int det(const Matrix* matrix, double* val) {
   if (matrix == NULL || matrix->rows != matrix->cols) {
-    return error;
+    return EXIT_FAILURE;
   }
 
-  Matrix* new_matrix = create_matrix(matrix->rows, matrix->cols);
+  size_t size = matrix->rows;
+  Matrix* new_matrix = create_matrix(size, size);
   if (new_matrix == NULL) {
-    return error;
+    return EXIT_FAILURE;
   }
 
   for (size_t i = 0; i < matrix->rows; i++) {
@@ -230,47 +232,44 @@ int det(const Matrix* matrix, double* val) {
     }
   }
 
-  *val = 1;
-  size_t size = matrix->rows;
+  int sign = 1;
   double eps = 1e-9, *temp;
-  for (size_t i = 0, k = 0; i < size; i++) {
-    k = i;
+  for (size_t i = 0, i_max = 0; i < size; i++) {
+    i_max = i;
     for (size_t j = i + 1; j < size; j++) {
-      if (fabs(new_matrix->data[j][i]) > fabs(new_matrix->data[k][i])) {
-        k = j;
+      if (fabs(new_matrix->data[j][i]) > fabs(new_matrix->data[i_max][i])) {
+        i_max = j;
       }
     }
 
-    if (fabs(new_matrix->data[k][i]) < eps) {
+    if (fabs(new_matrix->data[i_max][i]) < eps) {
       *val = 0;
       free_matrix(new_matrix);
-      return success;
+      return EXIT_SUCCESS;
     }
 
     temp = new_matrix->data[i];
-    new_matrix->data[i] = new_matrix->data[k];
-    new_matrix->data[k] = temp;
+    new_matrix->data[i] = new_matrix->data[i_max];
+    new_matrix->data[i_max] = temp;
 
-    if (i != k) {
-      *val = 0 - *val;
-    }
+    sign = i != i_max ? -sign : sign;
 
-    *val *= new_matrix->data[i][i];
-    for (size_t j = i  + 1; j < size ; j++) {
-      new_matrix->data[i][j] /= new_matrix->data[i][i];
-    }
-
-    for (size_t j = 0; j < size; j++) {
-      if (j != i && fabs(new_matrix->data[j][i]) > eps) {
-        for (size_t k = i + 1; k < size; k++) {
-          new_matrix->data[j][k] -= new_matrix->data[i][k] * new_matrix->data[j][i];
-        }
+    for (size_t j = i + 1; j < size; j++) {
+      double mul_num = -new_matrix->data[j][i] / new_matrix->data[i][i];
+      for (size_t k = i; k < size; k++) {
+        new_matrix->data[j][k] += new_matrix->data[i][k] * mul_num;
       }
     }
   }
 
+  double res = 1;
+  for (size_t i = 0; i < size; i++) {
+    res *= new_matrix->data[i][i];
+  }
+  *val = sign * res;
+
   free_matrix(new_matrix);
-  return success;
+  return EXIT_SUCCESS;
 }
 
 Matrix* adj(const Matrix* matrix) {
@@ -285,26 +284,11 @@ Matrix* adj(const Matrix* matrix) {
     return NULL;
   }
 
-  Matrix* help_matrix = create_matrix(size - 1, size - 1);
-  if (help_matrix == NULL) {
-    free_matrix(new_matrix);
-    return NULL;
-  }
-
   double val = 0;
   for (size_t i = 0; i < size; i++) {
     for (size_t j = 0; j < size; j++) {
-      for (size_t _i = 0, itr = 0; _i < size - 1; _i++) {
-        itr = _i >= i ? _i + 1 : _i;
-        for (size_t _j = 0, jtr = 0; _j < size - 1; _j++) {
-          jtr = _j >= j ? _j + 1 : _j;
-          help_matrix->data[_i][_j] = matrix->data[itr][jtr];
-        }
-      }
-
-      if (det(help_matrix, &val) != success) {
+      if (get_minor(matrix, i, j, &val) != EXIT_SUCCESS) {
         free_matrix(new_matrix);
-        free_matrix(help_matrix);
         return NULL;
       }
 
@@ -312,7 +296,6 @@ Matrix* adj(const Matrix* matrix) {
     }
   }
 
-  free_matrix(help_matrix);
   return new_matrix;
 }
 
@@ -327,7 +310,7 @@ Matrix* inv(const Matrix* matrix) {
   }
 
   double val;
-  if (det(matrix, &val) != success) {
+  if (det(matrix, &val) != EXIT_SUCCESS) {
     free_matrix(adjointed_matrix);
     return NULL;
   }
@@ -340,4 +323,33 @@ Matrix* inv(const Matrix* matrix) {
 
   free_matrix(adjointed_matrix);
   return new_matrix;
+}
+
+int get_minor(const Matrix* matrix, size_t row, size_t col, double* val) {
+  if (matrix == NULL || row > matrix->rows - 1 || col > matrix->cols - 1 ||
+    matrix->rows != matrix->cols || val == NULL) {
+      return EXIT_FAILURE;
+  }
+
+  size_t size = matrix->rows;
+  Matrix* new_matrix = create_matrix(size - 1, size - 1);
+  if (new_matrix == NULL) {
+    return EXIT_FAILURE;
+  }
+
+  for (size_t i = 0, itr = 0; i < size - 1; i++) {
+    itr = i >= row ? i + 1 : i;
+    for (size_t j = 0, jtr = 0; j < size - 1; j++) {
+      jtr = j >= col ? j + 1 : j;
+      new_matrix->data[i][j] = matrix->data[itr][jtr];
+    }
+  }
+
+  if (det(new_matrix, val) != EXIT_SUCCESS) {
+    free_matrix(new_matrix);
+    return EXIT_FAILURE;
+  }
+
+  free_matrix(new_matrix);
+  return EXIT_SUCCESS;
 }

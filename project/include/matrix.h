@@ -6,11 +6,6 @@
 #include <stdio.h>
 #include <math.h>
 
-typedef enum {
-  success,
-  error
-} RESULT;
-
 typedef struct {
   double **data;
   size_t rows, cols;
@@ -39,5 +34,8 @@ Matrix* mul(const Matrix* l, const Matrix* r);
 int det(const Matrix* matrix, double* val);
 Matrix* adj(const Matrix* matrix);
 Matrix* inv(const Matrix* matrix);
+
+// Additional operations
+int get_minor(const Matrix* matrix, size_t row, size_t col, double* val);
 
 #endif  // PROJECT_INCLUDE_MATRIX_H_
