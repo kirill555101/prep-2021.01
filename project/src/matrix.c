@@ -233,7 +233,7 @@ int det(const Matrix* matrix, double* val) {
   }
 
   int sign = 1;
-  double eps = 1e-9, *temp;
+  double eps = 1e-9;
   for (size_t i = 0, i_max = 0; i < size; i++) {
     i_max = i;
     for (size_t j = i + 1; j < size; j++) {
@@ -248,7 +248,7 @@ int det(const Matrix* matrix, double* val) {
       return EXIT_SUCCESS;
     }
 
-    temp = new_matrix->data[i];
+    double* temp = new_matrix->data[i];
     new_matrix->data[i] = new_matrix->data[i_max];
     new_matrix->data[i_max] = temp;
 
