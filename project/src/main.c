@@ -32,7 +32,6 @@ int main() {
     if (second_matrix == NULL) {
         fprintf(stderr, "FAILURE create_matrix");
         free_matrix(first_matrix);
-        free_matrix(second_matrix);
         return create_matrix_error;
     }
     fprintf(stdin, "SUCCESS create_matrix");
