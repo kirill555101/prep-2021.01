@@ -9,14 +9,14 @@ int main(int argc, const char **argv) {
     }
 
     const char* path_to_eml = argv[1];
-
+    
     FILE* file = fopen(path_to_eml, "r");
     if (file == NULL) {
         fprintf(stderr, "file %s was not found\n", path_to_eml);
         return EXIT_FAILURE;
     }
 
-    const char* str = parse_email(file);
+    char* str = parse_email(file);
     fclose(file);
 
     if (str == NULL) {
@@ -25,6 +25,6 @@ int main(int argc, const char **argv) {
     }
 
     printf("%s\n", str);
-    free((char*)str);
+    free(str);
     return EXIT_SUCCESS;
 }
