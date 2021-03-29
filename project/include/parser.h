@@ -16,9 +16,11 @@ typedef enum {
 #define MAX_LINE_LENGTH 250
 
 char* parse_email(FILE* file);
-int has_parsed_line(const char* line, char* res, HEADER_NAME* name);
+int parse_line(const char* line, char* res, HEADER_NAME* name);
 char* str_to_lower(const char* str);
-int free_array(char* array[], size_t length);
-size_t get_count(FILE* file, const char* content);
+int get_count_of_content_type(FILE* file, const char* content, size_t* val);
+
+char** make_array(size_t length);
+int free_array(char** array, size_t length);
 
 #endif  // PROJECT_INCLUDE_PARSER_H_
