@@ -1,219 +1,277 @@
+#define _GNU_SOURCE
+
 #include "parser.h"
 
-char* parse_email(FILE* file) {
-  if (file == NULL) {
-    return NULL;
-  }
-  
-  char** types_arr = make_array(4);
-  if (types_arr == NULL) {
-    return NULL;
-  }
+lexeme_t get_lexeme(char* line) {
+	if (strncasecmp(line, FROM_STR, strlen(FROM_STR)) == 0) {
+		return LEXEME_FROM;
+	}
 
-  char* res = calloc(MAX_LINE_LENGTH, sizeof(char));
-  if (res == NULL) {
-    return NULL;
-  }
+	if (strncasecmp(line, TO_STR, strlen(TO_STR)) == 0) {
+		return LEXEME_TO;
+	}
 
-  char line[MAX_LINE_LENGTH] = {0};
-  char new_line[MAX_LINE_LENGTH] = {0};
-  char val[MAX_LINE_LENGTH] = {0};
+	if (strncasecmp(line, DATE_STR, strlen(DATE_STR)) == 0) {
+		return LEXEME_DATE;
+	}
 
-  HEADER_NAME name = 0;
-  char *begin_pos = NULL, *end_pos = NULL, *pos = NULL, *start = NULL;
-  fgets(new_line, MAX_LINE_LENGTH, file);
-  while(line[0] != '\n' && line[0] != '\r') {
-    strcpy(line, new_line);
-    if (parse_line(line, val, &name) != EXIT_SUCCESS) {
-      fgets(new_line, MAX_LINE_LENGTH, file);
-      continue;
-    }
+	if (strcasestr(line, BOUNDARY_STR) != NULL) {
+		return LEXEME_BOUNDARY;
+	}
 
-    end_pos = strstr(val, "\n");
-    if (end_pos != NULL) {
-      val[(end_pos - val)] = '\0';
-    }
-
-    fgets(new_line, MAX_LINE_LENGTH, file);
-    if (isspace(new_line[0]) && isspace(new_line[1])) {
-      size_t i = 0;
-      for (i = 0; isspace(line[i]); i++) ;
-      strcat(val, new_line + i);
-      strcpy(line, new_line);
-      
-
-
-      end_pos = strstr(val, "\n");
-      if (end_pos != NULL) {
-        val[(end_pos - val)] = '\0';
-      }
-    }
-    else if (isspace(new_line[0])) {
-      strcat(val, new_line);
-
-      end_pos = strstr(val, "\n");    
-      if (end_pos != NULL) {
-        val[(end_pos - val)] = '\0';
-      }
-    }
-
-    if (name < content_type) {
-      strcpy(types_arr[name], val);
-    } else {
-      if ((pos = strstr(val, "multipart")) != NULL) {
-        strcat(val, new_line);
-        end_pos = strstr(val, "\n");
-        if (end_pos != NULL) {
-          val[(end_pos - val)] = '\0';
-        }
-
-        begin_pos = strstr(pos, "boundary=");
-        end_pos = strrchr(val, '"');
-        start = begin_pos + strlen("boundary=");
-        if (end_pos != NULL) {
-          strncpy(types_arr[name], start + 1, end_pos - start - 1);
-        } else {
-          strcpy(types_arr[name], start);
-        }
-      } else {
-        strcpy(types_arr[name], "1");
-      }
-    }
-  }
-  
-  if (line[0] != '\n' && line[0] != '\r') {
-    fgets(new_line, MAX_LINE_LENGTH, file);
-  }
-
-  if (feof(file)) {
-    strcpy(types_arr[name], "0");
-  }
-
-  strcpy(res, "");
-  for (size_t i = 0; i < 3; i++) {
-    strcat(res, types_arr[i]);
-    strcat(res, "|");
-  }
-
-  if (strcmp(types_arr[3], "0") != 0 && strcmp(types_arr[3], "1") != 0) {
-    size_t count = 0;
-    rewind(file);
-
-    if (get_count_of_content_type(file, types_arr[3], &count) == EXIT_SUCCESS) {
-      char num_str[3] = "";
-      sprintf(num_str, "%ld", count - 1);
-      strcat(res, num_str);
-    }
-  } else {
-    strcat(res, types_arr[3]);
-  }
-
-  free_array(types_arr, 4);
-
-  return res;
+	return LEXEME_NO;
 }
 
-int parse_line(const char* line, char* res, HEADER_NAME* name) {
-  if (line == NULL || res == NULL || name == NULL) {
-    return EXIT_FAILURE;
-  }
-
-  const char* types_arr[4] = {
-    "from:", "to:",
-    "date:", "content-type:"
-  };
-
-  char *pos = NULL, *lowered_str = NULL;
-  if ((lowered_str = str_to_lower(line)) == NULL) {
-    return EXIT_FAILURE;
-  }
-
-  for (size_t i = 0; i < 4; i++) {
-    if ((pos = strstr(lowered_str, types_arr[i])) != NULL && (pos - lowered_str) == 0 ) {
-      pos = pos + strlen(types_arr[i]);
-      
-      if (isspace(lowered_str[pos - lowered_str])) {
-        pos++;
-      }
-      strcpy(res, line + (pos - lowered_str));
-
-      *name = i;
-      free(lowered_str);
-      return EXIT_SUCCESS;
-    }
-  }
-
-  free(lowered_str);
-  return EXIT_FAILURE;
+static char* store_args(char* line) {
+	char* saveptr;
+	strtok_r(line, ":", &saveptr);
+	char* res;
+	res = strtok_r(NULL, "\r\n", &saveptr);
+	return res + strspn(res, " ");
 }
 
-char* str_to_lower(const char* str) {
-  if (str == NULL) {
-    return NULL;
-  }
-
-  char* res = calloc(strlen(str), sizeof(char));
-  if (res == NULL) {
-    return NULL;
-  }
-
-  for (size_t i = 0; i < strlen(str); i++) {
-    res[i] = tolower(str[i]);
-  }
-
-  return res;
+void store_from(char* line, data_t* data) {
+	data->from = store_args(line);
 }
 
-int get_count_of_content_type(FILE* file, const char* content, size_t* val) {
-  if (file == 0 || content == 0 || val == NULL) {
-    return EXIT_FAILURE;
-  }
-
-  size_t count = 0;
-  char line[MAX_LINE_LENGTH] = {0};
-  while (!feof(file)) {
-    char* pos = strstr(line, content);
-    if (pos != NULL) {
-      if (line[(pos + strlen(content) - line)] != '-') {
-        count++;
-      }
-    }
-
-    fgets(line, MAX_LINE_LENGTH, file);
-  }
-
-  *val = count;
-
-  return EXIT_SUCCESS;
+void store_to(char* line, data_t* data) {
+	data->to = store_args(line);
 }
 
-char** make_array(size_t length) {
-  char** array = calloc(length, sizeof(char*));
-  if (array == NULL) {
-    return NULL;
-  }
-
-  for (size_t i = 0; i < 4; i++) {
-    if ((array[i] = calloc(3 * MAX_LINE_LENGTH / 4, sizeof(char))) == NULL) {
-      free_array(array, 4);
-      return NULL;
-    }
-  }
-
-  return array;
+void store_date(char* line, data_t* data) {
+	data->date = store_args(line);
 }
 
-int free_array(char** array, size_t length) {
-  if(array == NULL) {
-    return EXIT_FAILURE;
-  }
+void store_boundary(char* line, data_t* data) {
+	char* res = strcasestr(line, BOUNDARY_STR);
+	if (strlen(res) != strlen(line)) {
+		if ((*(res - 1) != 32) && (*(res - 1) != '\t') && (*(res - 1) != ';')) {
+			return;
+		}
+	}
 
-  for (size_t i = 0; i < length; i++) {
-    if (array[i] != NULL) {
-      free(array[i]);
-    }
-  }
+	res = res + strlen(BOUNDARY_STR) + strspn(res, " ");
+	if (res[0] == '"') {
+		res++;
+		char* saveptr;
+		res = strtok_r(res, "\"", &saveptr);
+	} else {
+		char* saveptr;
+		res = strtok_r(res, "\r\n ", &saveptr);
+	}
+	data->boundary = res;
+}
 
-  free(array);
-  return EXIT_SUCCESS;
+rule_t syntax[STATE_COUNT][LEXEME_COUNT] = {
+						/* LEXEME_FROM */			/* LEXEME_TO */			/* LEXEME_DATE */			/* LEXEME_BOUNDARY */
+	/*0 STATE_BEGIN */ 				{{STATE_FROM, store_from}, {STATE_TO, store_to}, {STATE_DATE, store_date},
+										{STATE_BOUNDARY, store_boundary}},
+	/*1 STATE_FROM */  				{{STATE_ERROR, NULL}, {STATE_FROM_TO, store_to}, {STATE_FROM_DATE, store_date},
+										{STATE_FROM_BOUNDARY, store_boundary}},
+	/*2 STATE_TO */    				{{STATE_FROM_TO, store_from}, {STATE_ERROR, NULL},  {STATE_TO_DATE, store_date},
+										{STATE_TO_BOUNDARY, store_boundary}},
+	/*3 STATE_DATE */				{{STATE_FROM_DATE, store_from}, {STATE_TO_DATE, store_to}, {STATE_ERROR, NULL},
+										{STATE_DATE_BOUNDARY, store_boundary}},
+	/*4 STATE_BOUNDARY */ 			{{STATE_FROM_BOUNDARY, store_from}, {STATE_TO_BOUNDARY, store_to},
+										{STATE_DATE_BOUNDARY, store_date}, {STATE_ERROR, NULL}},
+	/*5 STATE_FROM_TO */  			{{STATE_ERROR, NULL}, {STATE_ERROR, NULL}, {STATE_FROM_TO_DATE, store_date},
+										{STATE_FROM_TO_BOUNDARY, store_boundary}},
+	/*6 STATE_FROM_DATE */			{{STATE_ERROR, NULL}, {STATE_FROM_TO_DATE, store_to}, {STATE_ERROR, NULL},
+										{STATE_FROM_DATE_BOUNDARY, store_boundary}},
+	/*7 STATE_FROM_BOUNDARY */		{{STATE_ERROR, NULL}, {STATE_FROM_TO_BOUNDARY, store_to},
+										{STATE_FROM_DATE_BOUNDARY, store_date}, {STATE_ERROR, NULL}},
+	/*8 STATE_TO_DATE */ 			{{STATE_FROM_TO_DATE, store_from}, {STATE_ERROR, NULL}, {STATE_ERROR, NULL},
+										{STATE_TO_DATE_BOUNDARY, store_boundary}},
+	/*9 STATE_TO_BOUNDARY */ 		{{STATE_FROM_TO_BOUNDARY, store_from}, {STATE_ERROR, NULL},
+										{STATE_TO_DATE_BOUNDARY, store_date}, {STATE_ERROR, NULL}},
+	/*10 STATE_DATE_BOUNDARY */ 	{{STATE_FROM_DATE_BOUNDARY, store_from}, {STATE_TO_DATE_BOUNDARY, store_date},
+										{STATE_ERROR, NULL}, {STATE_ERROR, NULL}},
+	/*11 STATE_FROM_TO_DATE */ 		{{STATE_ERROR, NULL}, {STATE_ERROR, NULL}, {STATE_ERROR, NULL},
+										{STATE_END, store_boundary}},
+	/*12 STATE_FROM_TO_BOUNDARY */ 	{{STATE_ERROR, NULL}, {STATE_ERROR, NULL}, {STATE_END, store_date},
+										{STATE_ERROR, NULL}},
+	/*13 STATE_FROM_DATE_BOUNDARY*/ {{STATE_ERROR, NULL}, {STATE_END, store_to}, {STATE_ERROR, NULL},
+										{STATE_ERROR, NULL}},
+	/*14 STATE_TO_DATE_BOUNDARY */ {{STATE_END, NULL}, {STATE_ERROR, NULL}, {STATE_ERROR, NULL},
+										 {STATE_ERROR, NULL}},
+};
+
+int parse_email(const char* filename) {
+	int fd = open(filename, O_RDWR, S_IRUSR | S_IWUSR);
+	struct stat sb;
+
+	if (fstat(fd, &sb) == -1) {
+		return EXIT_FAILURE;
+	}
+
+	char* file_in_memory = mmap(NULL, sb.st_size, PROT_READ | PROT_WRITE, MAP_PRIVATE, fd, 0);
+	if (file_in_memory == NULL) {
+		return EXIT_FAILURE;
+	}
+
+	int has_body = 0, has_found_next_line = 0, has_found_empty_line = 0;
+	for (int i = 0; i < sb.st_size; i++) {
+		if (has_found_empty_line == 1 && file_in_memory[i] != '\n' && file_in_memory[i] != '\r' &&
+			file_in_memory[i] != '\0' && file_in_memory[i] != 10) {
+				has_body = 1;
+				break;
+		}
+
+		if (has_found_next_line == 1 && (file_in_memory[i] == '\n' || file_in_memory[i] == '\r')) {
+			has_found_empty_line = 1;
+			has_body = 0;
+		}
+
+		has_found_next_line = 0;
+		if (file_in_memory[i] == '\n' || file_in_memory[i] == '\r') {
+			has_found_next_line = 1;
+		}
+	}
+
+	data_t data = {0};
+	lexeme_t lexeme;
+	state_t state = STATE_BEGIN;
+	rule_t rule = {17, NULL};
+	int has_found_boundary = 0, has_after_part = 0, has_parts_begin = 0;
+	char *saveptr1, *saveptr2, *new, *line = strtok_r(file_in_memory, "\n\r", &saveptr1);
+	while (line != NULL) {
+		lexeme = get_lexeme(line);
+		if (state < STATE_COUNT && lexeme < LEXEME_COUNT) {
+			rule = syntax[state][lexeme];
+		}
+
+		if (state != STATE_END && state != STATE_ERROR && (lexeme < LEXEME_COUNT) && rule.action) {
+			rule.action(line, &data);
+		}
+		if (has_found_boundary == 1) {
+			if (strstr(line, data.boundary) != NULL) {
+				has_parts_begin = 1;
+				has_after_part = 0;
+				data.parts++;
+			}
+			if (has_parts_begin == 1) {
+				line = strtok_r(NULL, "\n\r", &saveptr1);
+				if (line != NULL) {
+					if (strlen(line) != 1) {
+						has_after_part = 1;
+					}
+				}
+				continue;
+			}
+		}
+		line = strtok_r(NULL, "\n\r", &saveptr1);
+		if (line != NULL && has_parts_begin == 0) {
+			while (line[0] == ' ' && lexeme < LEXEME_BOUNDARY) {
+				if (lexeme == LEXEME_FROM &&
+					state != STATE_FROM &&
+					state != STATE_FROM_TO &&
+					state != STATE_FROM_DATE &&
+					state != STATE_FROM_BOUNDARY &&
+					state != STATE_FROM_TO_DATE &&
+					state != STATE_FROM_TO_BOUNDARY &&
+					state != STATE_FROM_DATE_BOUNDARY &&
+					state != STATE_END) {
+						new = calloc(1, strlen(data.from) + strlen(line) + 1);
+						if (new == NULL) {
+							close(fd);
+							return EXIT_FAILURE;
+						}
+						data.from = strtok_r(data.from, "\n\r", &saveptr2);
+						strncat(new, data.from, strlen(data.from));
+						strncat(new, line, strlen(line));
+						strncpy(data.from, new, strlen(new) + 1);
+						free(new);
+				}
+
+				if (lexeme == LEXEME_TO &&
+					state != STATE_TO &&
+					state != STATE_FROM_TO &&
+					state != STATE_TO_DATE &&
+					state != STATE_TO_BOUNDARY &&
+					state != STATE_FROM_TO_DATE &&
+					state != STATE_TO_DATE_BOUNDARY &&
+					state != STATE_END) {
+						new = calloc(1, strlen(data.to) + strlen(line) + 1);
+						if (new == NULL) {
+							close(fd);
+							return EXIT_FAILURE;
+						}
+						data.to = strtok_r(data.to, "\n\r", &saveptr2);
+						strncat(new, data.to, strlen(data.to));
+						strncat(new, line, strlen(line));
+						strncpy(data.to, new, strlen(new) + 1);
+						free(new);
+				}
+
+				if (lexeme == LEXEME_DATE &&
+					state != STATE_DATE &&
+					state != STATE_FROM_DATE &&
+					state != STATE_TO_DATE &&
+					state != STATE_DATE_BOUNDARY &&
+					state != STATE_FROM_TO_DATE &&
+					state != STATE_FROM_DATE_BOUNDARY &&
+					state != STATE_TO_DATE_BOUNDARY &&
+					state != STATE_END) {
+						new = calloc(1, strlen(data.date) + strlen(line) + 1);
+						if (new == NULL) {
+							close(fd);
+							return EXIT_FAILURE;
+						}
+						data.date = strtok_r(data.date, "\n\r", &saveptr2);
+						strncat(new, data.date, strlen(data.date));
+						strncat(new, line, strlen(line));
+						strncpy(data.date, new, strlen(new) + 1);
+						free(new);
+				}
+				line = strtok_r(NULL, "\n\r", &saveptr1);
+			}
+		}
+		if (!((rule.state == STATE_BOUNDARY ||
+			rule.state == STATE_FROM_BOUNDARY ||
+			rule.state == STATE_TO_BOUNDARY ||
+			rule.state == STATE_DATE_BOUNDARY ||
+			rule.state == STATE_FROM_TO_BOUNDARY ||
+			rule.state == STATE_FROM_DATE_BOUNDARY ||
+			rule.state == STATE_END) &&
+			data.boundary == NULL)) {
+				state = rule.state;
+		}
+
+		if (state == STATE_BOUNDARY ||
+			state == STATE_FROM_BOUNDARY ||
+			state == STATE_DATE_BOUNDARY ||
+			state == STATE_FROM_TO_BOUNDARY ||
+			state == STATE_FROM_DATE_BOUNDARY ||
+			state == STATE_TO_DATE_BOUNDARY ||
+			state == STATE_END) {
+				has_found_boundary = 1;
+		}
+	}
+
+	close(fd);
+
+	if (data.parts != 0 && has_after_part == 0) {
+		data.parts--;
+	} else if (has_body == 0) {
+		data.parts = 0;
+	} else if (data.parts == 0) {
+		data.parts = 1;
+	}
+
+	if (data.from != NULL) {
+		printf("%s", data.from);
+	}
+
+	printf("|");
+	if (data.to != NULL) {
+		printf("%s", data.to);
+	}
+
+	printf("|");
+	if (data.date != NULL) {
+		printf("%s", data.date);
+	}
+	printf("|%zu\n", data.parts);
+
+	return EXIT_SUCCESS;
 }
