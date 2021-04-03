@@ -147,6 +147,81 @@ void print_data(data_t data) {
 	printf("|%zu\n", data.parts);
 }
 
+int isFromLexeme(lexeme_t lexeme, state_t state) {
+	if (lexeme == LEXEME_FROM &&
+		state != STATE_FROM &&
+		state != STATE_FROM_TO &&
+		state != STATE_FROM_DATE &&
+		state != STATE_FROM_BOUNDARY &&
+		state != STATE_FROM_TO_DATE &&
+		state != STATE_FROM_TO_BOUNDARY &&
+		state != STATE_FROM_DATE_BOUNDARY &&
+		state != STATE_END) {
+			return 1;
+	}
+
+	return 0;
+}
+
+int isToLexeme(lexeme_t lexeme, state_t state) {
+	if (lexeme == LEXEME_TO &&
+		state != STATE_TO &&
+		state != STATE_FROM_TO &&
+		state != STATE_TO_DATE &&
+		state != STATE_TO_BOUNDARY &&
+		state != STATE_FROM_TO_DATE &&
+		state != STATE_TO_DATE_BOUNDARY &&
+		state != STATE_END) {
+			return 1;
+	}
+
+	return 0;
+}
+
+int isDateLexeme(lexeme_t lexeme, state_t state) {
+	if (lexeme == LEXEME_DATE &&
+		state != STATE_DATE &&
+		state != STATE_FROM_DATE &&
+		state != STATE_TO_DATE &&
+		state != STATE_DATE_BOUNDARY &&
+		state != STATE_FROM_TO_DATE &&
+		state != STATE_FROM_DATE_BOUNDARY &&
+		state != STATE_TO_DATE_BOUNDARY &&
+		state != STATE_END) {
+			return 1;
+	}
+
+	return 0;
+}
+
+int isRuleStateBoundary(rule_t rule) {
+	if (rule.state == STATE_BOUNDARY ||
+		rule.state == STATE_FROM_BOUNDARY ||
+		rule.state == STATE_TO_BOUNDARY ||
+		rule.state == STATE_DATE_BOUNDARY ||
+		rule.state == STATE_FROM_TO_BOUNDARY ||
+		rule.state == STATE_FROM_DATE_BOUNDARY ||
+		rule.state == STATE_END) {
+			return 1;
+	}
+
+	return 0;
+}
+
+int isStateBoundary(state_t state) {
+	if (state == STATE_BOUNDARY ||
+		state == STATE_FROM_BOUNDARY ||
+		state == STATE_DATE_BOUNDARY ||
+		state == STATE_FROM_TO_BOUNDARY ||
+		state == STATE_FROM_DATE_BOUNDARY ||
+		state == STATE_TO_DATE_BOUNDARY ||
+		state == STATE_END) {
+			return 1;
+	}
+
+	return 0;
+}
+
 int get_data(char* file_in_memory, data_t* input_data, int has_body) {
 	data_t data = {0};
 	lexeme_t lexeme;
@@ -183,15 +258,7 @@ int get_data(char* file_in_memory, data_t* input_data, int has_body) {
 		line = strtok_r(NULL, "\n\r", &saveptr1);
 		if (line != NULL && has_parts_begin == 0) {
 			while (line[0] == ' ' && lexeme < LEXEME_BOUNDARY) {
-				if (lexeme == LEXEME_FROM &&
-					state != STATE_FROM &&
-					state != STATE_FROM_TO &&
-					state != STATE_FROM_DATE &&
-					state != STATE_FROM_BOUNDARY &&
-					state != STATE_FROM_TO_DATE &&
-					state != STATE_FROM_TO_BOUNDARY &&
-					state != STATE_FROM_DATE_BOUNDARY &&
-					state != STATE_END) {
+				if (isFromLexeme(lexeme, state)) {
 						new = calloc(1, strlen(data.from) + strlen(line) + 1);
 						if (new == NULL) {
 							return EXIT_FAILURE;
@@ -203,14 +270,7 @@ int get_data(char* file_in_memory, data_t* input_data, int has_body) {
 						free(new);
 				}
 
-				if (lexeme == LEXEME_TO &&
-					state != STATE_TO &&
-					state != STATE_FROM_TO &&
-					state != STATE_TO_DATE &&
-					state != STATE_TO_BOUNDARY &&
-					state != STATE_FROM_TO_DATE &&
-					state != STATE_TO_DATE_BOUNDARY &&
-					state != STATE_END) {
+				if (isToLexeme(lexeme, state)) {
 						new = calloc(1, strlen(data.to) + strlen(line) + 1);
 						if (new == NULL) {
 							return EXIT_FAILURE;
@@ -222,15 +282,7 @@ int get_data(char* file_in_memory, data_t* input_data, int has_body) {
 						free(new);
 				}
 
-				if (lexeme == LEXEME_DATE &&
-					state != STATE_DATE &&
-					state != STATE_FROM_DATE &&
-					state != STATE_TO_DATE &&
-					state != STATE_DATE_BOUNDARY &&
-					state != STATE_FROM_TO_DATE &&
-					state != STATE_FROM_DATE_BOUNDARY &&
-					state != STATE_TO_DATE_BOUNDARY &&
-					state != STATE_END) {
+				if (isDateLexeme(lexeme, state)) {
 						new = calloc(1, strlen(data.date) + strlen(line) + 1);
 						if (new == NULL) {
 							return EXIT_FAILURE;
@@ -244,25 +296,12 @@ int get_data(char* file_in_memory, data_t* input_data, int has_body) {
 				line = strtok_r(NULL, "\n\r", &saveptr1);
 			}
 		}
-		if (!((rule.state == STATE_BOUNDARY ||
-			rule.state == STATE_FROM_BOUNDARY ||
-			rule.state == STATE_TO_BOUNDARY ||
-			rule.state == STATE_DATE_BOUNDARY ||
-			rule.state == STATE_FROM_TO_BOUNDARY ||
-			rule.state == STATE_FROM_DATE_BOUNDARY ||
-			rule.state == STATE_END) &&
-			data.boundary == NULL)) {
-				state = rule.state;
+		if (!((isRuleStateBoundary(rule)) && data.boundary == NULL)) {
+			state = rule.state;
 		}
 
-		if (state == STATE_BOUNDARY ||
-			state == STATE_FROM_BOUNDARY ||
-			state == STATE_DATE_BOUNDARY ||
-			state == STATE_FROM_TO_BOUNDARY ||
-			state == STATE_FROM_DATE_BOUNDARY ||
-			state == STATE_TO_DATE_BOUNDARY ||
-			state == STATE_END) {
-				has_found_boundary = 1;
+		if (isStateBoundary(state)) {
+			has_found_boundary = 1;
 		}
 	}
 
