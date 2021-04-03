@@ -2,7 +2,7 @@
 
 #include "parser.h"
 
-// State functions
+// Store functions and state
 lexeme_t get_lexeme(char* line) {
 	if (strncasecmp(line, FROM_STR, strlen(FROM_STR)) == 0) {
 		return LEXEME_FROM;
