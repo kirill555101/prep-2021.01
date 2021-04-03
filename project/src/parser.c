@@ -100,6 +100,24 @@ char* get_memory_from_file(const char* filename, size_t* length) {
 	return file_in_memory;
 }
 
+
+void print_data(data_t data) {
+	if (data.from != NULL) {
+		printf("%s", data.from);
+	}
+
+	printf("|");
+	if (data.to != NULL) {
+		printf("%s", data.to);
+	}
+
+	printf("|");
+	if (data.date != NULL) {
+		printf("%s", data.date);
+	}
+	printf("|%zu\n", data.parts);
+}
+
 int parse_email(const char* filename, data_t* input_data) {
 	size_t length = 0;
 	char* file_in_memory = get_memory_from_file(filename, &length);
@@ -254,21 +272,4 @@ int parse_email(const char* filename, data_t* input_data) {
 	*input_data = data;
 
 	return EXIT_SUCCESS;
-}
-
-void print_data(data_t data) {
-	if (data.from != NULL) {
-		printf("%s", data.from);
-	}
-
-	printf("|");
-	if (data.to != NULL) {
-		printf("%s", data.to);
-	}
-
-	printf("|");
-	if (data.date != NULL) {
-		printf("%s", data.date);
-	}
-	printf("|%zu\n", data.parts);
 }
