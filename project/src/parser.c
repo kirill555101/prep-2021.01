@@ -62,8 +62,8 @@ void store_boundary(char* line, data_t* data) {
 }
 
 rule_t syntax[STATE_COUNT][LEXEME_COUNT] = {
-						               /*LEXEME_FROM                                                        LEXEME_TO
-														 LEXEME_DATE                                                  LEXEME_BOUNDARY */
+						               /*LEXEME_FROM                                                         LEXEME_TO
+														 LEXEME_DATE                                                   LEXEME_BOUNDARY */
 /*STATE_BEGIN*/              {{STATE_FROM, store_from},                               {STATE_TO, store_to},
                              {STATE_DATE, store_date},                   {STATE_BOUNDARY, store_boundary}},
 
