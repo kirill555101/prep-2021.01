@@ -2,6 +2,7 @@
 
 #include "parser.h"
 
+// State functions
 lexeme_t get_lexeme(char* line) {
 	if (strncasecmp(line, FROM_STR, strlen(FROM_STR)) == 0) {
 		return LEXEME_FROM;
@@ -110,6 +111,7 @@ rule_t syntax[STATE_COUNT][LEXEME_COUNT] = {
 	                           {STATE_ERROR, NULL},                                     {STATE_ERROR, NULL}},
 };
 
+// Helpful functions
 char* get_memory_from_file(const char* filename, size_t* length) {
 	int fd = open(filename, O_RDWR, S_IRUSR | S_IWUSR);
 	struct stat sb;
@@ -130,21 +132,24 @@ char* get_memory_from_file(const char* filename, size_t* length) {
 	return file_in_memory;
 }
 
-void print_data(data_t data) {
-	if (data.from != NULL) {
-		printf("%s", data.from);
+char* expandString(const char* line, char* str) {
+	if (line == NULL || str == NULL) {
+		return NULL;
 	}
 
-	printf("|");
-	if (data.to != NULL) {
-		printf("%s", data.to);
+	char* saveptr;
+	char* new = calloc(1, strlen(str) + strlen(line) + 1);
+	if (new == NULL) {
+		return NULL;
 	}
 
-	printf("|");
-	if (data.date != NULL) {
-		printf("%s", data.date);
-	}
-	printf("|%zu\n", data.parts);
+	char* res = strtok_r(str, "\n\r", &saveptr);
+	strncat(new, res, strlen(res));
+	strncat(new, line, strlen(line));
+	strncpy(res, new, strlen(new) + 1);
+	free(new);
+
+	return res;
 }
 
 int isFromLexeme(lexeme_t lexeme, state_t state) {
@@ -229,7 +234,7 @@ int get_data(char* file_in_memory, data_t* input_data, int has_body) {
 	rule_t rule = {17, NULL};
 
 	int has_found_boundary = 0, has_after_part = 0, has_parts_begin = 0;
-	char *saveptr1, *saveptr2, *new, *line = strtok_r(file_in_memory, "\n\r", &saveptr1);
+	char *saveptr, *line = strtok_r(file_in_memory, "\n\r", &saveptr);
 	while (line != NULL) {
 		lexeme = get_lexeme(line);
 		if (state < STATE_COUNT && lexeme < LEXEME_COUNT) {
@@ -246,7 +251,7 @@ int get_data(char* file_in_memory, data_t* input_data, int has_body) {
 				data.parts++;
 			}
 			if (has_parts_begin == 1) {
-				line = strtok_r(NULL, "\n\r", &saveptr1);
+				line = strtok_r(NULL, "\n\r", &saveptr);
 				if (line != NULL) {
 					if (strlen(line) != 1) {
 						has_after_part = 1;
@@ -255,45 +260,27 @@ int get_data(char* file_in_memory, data_t* input_data, int has_body) {
 				continue;
 			}
 		}
-		line = strtok_r(NULL, "\n\r", &saveptr1);
+		line = strtok_r(NULL, "\n\r", &saveptr);
 		if (line != NULL && has_parts_begin == 0) {
 			while (line[0] == ' ' && lexeme < LEXEME_BOUNDARY) {
 				if (isFromLexeme(lexeme, state)) {
-						new = calloc(1, strlen(data.from) + strlen(line) + 1);
-						if (new == NULL) {
-							return EXIT_FAILURE;
-						}
-						data.from = strtok_r(data.from, "\n\r", &saveptr2);
-						strncat(new, data.from, strlen(data.from));
-						strncat(new, line, strlen(line));
-						strncpy(data.from, new, strlen(new) + 1);
-						free(new);
+					if ((data.from = expandString(line, data.from)) == NULL) {
+						return EXIT_FAILURE;
+					}
 				}
 
 				if (isToLexeme(lexeme, state)) {
-						new = calloc(1, strlen(data.to) + strlen(line) + 1);
-						if (new == NULL) {
-							return EXIT_FAILURE;
-						}
-						data.to = strtok_r(data.to, "\n\r", &saveptr2);
-						strncat(new, data.to, strlen(data.to));
-						strncat(new, line, strlen(line));
-						strncpy(data.to, new, strlen(new) + 1);
-						free(new);
+					if ((data.to = expandString(line, data.to)) == NULL) {
+						return EXIT_FAILURE;
+					}
 				}
 
 				if (isDateLexeme(lexeme, state)) {
-						new = calloc(1, strlen(data.date) + strlen(line) + 1);
-						if (new == NULL) {
-							return EXIT_FAILURE;
-						}
-						data.date = strtok_r(data.date, "\n\r", &saveptr2);
-						strncat(new, data.date, strlen(data.date));
-						strncat(new, line, strlen(line));
-						strncpy(data.date, new, strlen(new) + 1);
-						free(new);
+					if ((data.date = expandString(line, data.date)) == NULL) {
+						return EXIT_FAILURE;
+					}
 				}
-				line = strtok_r(NULL, "\n\r", &saveptr1);
+				line = strtok_r(NULL, "\n\r", &saveptr);
 			}
 		}
 		if (!((isRuleStateBoundary(rule)) && data.boundary == NULL)) {
@@ -317,6 +304,7 @@ int get_data(char* file_in_memory, data_t* input_data, int has_body) {
 	return EXIT_SUCCESS;
 }
 
+// Main functions
 int parse_email(const char* filename, data_t* input_data) {
 	size_t length = 0;
 	char* file_in_memory = get_memory_from_file(filename, &length);
@@ -348,4 +336,21 @@ int parse_email(const char* filename, data_t* input_data) {
 	}
 
 	return EXIT_SUCCESS;
+}
+
+void print_data(data_t data) {
+	if (data.from != NULL) {
+		printf("%s", data.from);
+	}
+
+	printf("|");
+	if (data.to != NULL) {
+		printf("%s", data.to);
+	}
+
+	printf("|");
+	if (data.date != NULL) {
+		printf("%s", data.date);
+	}
+	printf("|%zu\n", data.parts);
 }
