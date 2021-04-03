@@ -10,11 +10,13 @@ int main(int argc, const char **argv) {
     }
 
     const char *path_to_eml = argv[1];
-
-    if (parse_email(path_to_eml) != EXIT_SUCCESS) {
+    data_t data = {0};
+    if (parse_email(path_to_eml, &data) != EXIT_SUCCESS) {
         fprintf(stderr, "FAILURE parse_email");
         return EXIT_FAILURE;
     }
+
+    print_data(data);
 
     return EXIT_SUCCESS;
 }

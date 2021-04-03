@@ -63,7 +63,8 @@ typedef struct {
 	action_t action;
 } rule_t;
 
-int parse_email(const char* filename);
+int parse_email(const char* filename, data_t* input_data);
+void print_data(data_t data);
 
 #endif  // PROJECT_INCLUDE_PARSER_H_
 

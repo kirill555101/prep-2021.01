@@ -80,21 +80,35 @@ rule_t syntax[STATE_COUNT][LEXEME_COUNT] = {
 	/*14 STATE_TO_DATE_BOUNDARY */   {{STATE_END, NULL},                        {STATE_ERROR, NULL},                    {STATE_ERROR, NULL},                      {STATE_ERROR, NULL}},
 };
 
-int parse_email(const char* filename) {
+char* get_memory_from_file(const char* filename, size_t* length) {
 	int fd = open(filename, O_RDWR, S_IRUSR | S_IWUSR);
 	struct stat sb;
 
 	if (fstat(fd, &sb) == -1) {
-		return EXIT_FAILURE;
+		close(fd);
+		return NULL;
 	}
 
 	char* file_in_memory = mmap(NULL, sb.st_size, PROT_READ | PROT_WRITE, MAP_PRIVATE, fd, 0);
+	if (file_in_memory == NULL) {
+		close(fd);
+		return NULL;
+	}
+
+	close(fd);
+	*length = sb.st_size;
+	return file_in_memory;
+}
+
+int parse_email(const char* filename, data_t* input_data) {
+	size_t length = 0;
+	char* file_in_memory = get_memory_from_file(filename, &length);
 	if (file_in_memory == NULL) {
 		return EXIT_FAILURE;
 	}
 
 	int has_body = 0, has_found_next_line = 0, has_found_empty_line = 0;
-	for (int i = 0; i < sb.st_size; i++) {
+	for (size_t i = 0; i < length; i++) {
 		if (has_found_empty_line == 1 && file_in_memory[i] != '\n' && file_in_memory[i] != '\r' &&
 			file_in_memory[i] != '\0' && file_in_memory[i] != 10) {
 				has_body = 1;
@@ -157,7 +171,6 @@ int parse_email(const char* filename) {
 					state != STATE_END) {
 						new = calloc(1, strlen(data.from) + strlen(line) + 1);
 						if (new == NULL) {
-							close(fd);
 							return EXIT_FAILURE;
 						}
 						data.from = strtok_r(data.from, "\n\r", &saveptr2);
@@ -177,7 +190,6 @@ int parse_email(const char* filename) {
 					state != STATE_END) {
 						new = calloc(1, strlen(data.to) + strlen(line) + 1);
 						if (new == NULL) {
-							close(fd);
 							return EXIT_FAILURE;
 						}
 						data.to = strtok_r(data.to, "\n\r", &saveptr2);
@@ -198,7 +210,6 @@ int parse_email(const char* filename) {
 					state != STATE_END) {
 						new = calloc(1, strlen(data.date) + strlen(line) + 1);
 						if (new == NULL) {
-							close(fd);
 							return EXIT_FAILURE;
 						}
 						data.date = strtok_r(data.date, "\n\r", &saveptr2);
@@ -232,8 +243,6 @@ int parse_email(const char* filename) {
 		}
 	}
 
-	close(fd);
-
 	if (data.parts != 0 && has_after_part == 0) {
 		data.parts--;
 	} else if (has_body == 0) {
@@ -242,6 +251,12 @@ int parse_email(const char* filename) {
 		data.parts = 1;
 	}
 
+	*input_data = data;
+
+	return EXIT_SUCCESS;
+}
+
+void print_data(data_t data) {
 	if (data.from != NULL) {
 		printf("%s", data.from);
 	}
@@ -256,6 +271,4 @@ int parse_email(const char* filename) {
 		printf("%s", data.date);
 	}
 	printf("|%zu\n", data.parts);
-
-	return EXIT_SUCCESS;
 }
