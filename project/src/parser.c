@@ -62,22 +62,52 @@ void store_boundary(char* line, data_t* data) {
 }
 
 rule_t syntax[STATE_COUNT][LEXEME_COUNT] = {
-						                     /*LEXEME_FROM                                LEXEME_TO                               LEXEME_DATE                               LEXEME_BOUNDARY */
-	/*0 STATE_BEGIN */ 				       {{STATE_FROM, store_from},                 {STATE_TO, store_to},                   {STATE_DATE, store_date},                 {STATE_BOUNDARY, store_boundary}},
-	/*1 STATE_FROM */  				       {{STATE_ERROR, NULL},                      {STATE_FROM_TO, store_to},              {STATE_FROM_DATE, store_date},            {STATE_FROM_BOUNDARY, store_boundary}},
-	/*2 STATE_TO */    				       {{STATE_FROM_TO, store_from},              {STATE_ERROR, NULL},                    {STATE_TO_DATE, store_date},              {STATE_TO_BOUNDARY, store_boundary}},
-	/*3 STATE_DATE */				         {{STATE_FROM_DATE, store_from},            {STATE_TO_DATE, store_to},              {STATE_ERROR, NULL},                      {STATE_DATE_BOUNDARY, store_boundary}},
-	/*4 STATE_BOUNDARY */ 			     {{STATE_FROM_BOUNDARY, store_from},        {STATE_TO_BOUNDARY, store_to},          {STATE_DATE_BOUNDARY, store_date},        {STATE_ERROR, NULL}},
-	/*5 STATE_FROM_TO */  			     {{STATE_ERROR, NULL},                      {STATE_ERROR, NULL},                    {STATE_FROM_TO_DATE, store_date},         {STATE_FROM_TO_BOUNDARY, store_boundary}},
-	/*6 STATE_FROM_DATE */			     {{STATE_ERROR, NULL},                      {STATE_FROM_TO_DATE, store_to},         {STATE_ERROR, NULL},                      {STATE_FROM_DATE_BOUNDARY, store_boundary}},
-	/*7 STATE_FROM_BOUNDARY */		   {{STATE_ERROR, NULL},                      {STATE_FROM_TO_BOUNDARY, store_to},     {STATE_FROM_DATE_BOUNDARY, store_date},   {STATE_ERROR, NULL}},
-	/*8 STATE_TO_DATE */ 			       {{STATE_FROM_TO_DATE, store_from},         {STATE_ERROR, NULL},                    {STATE_ERROR, NULL},                      {STATE_TO_DATE_BOUNDARY, store_boundary}},
-	/*9 STATE_TO_BOUNDARY */ 		     {{STATE_FROM_TO_BOUNDARY, store_from},     {STATE_ERROR, NULL},                    {STATE_TO_DATE_BOUNDARY, store_date},     {STATE_ERROR, NULL}},
-	/*10 STATE_DATE_BOUNDARY */ 	   {{STATE_FROM_DATE_BOUNDARY, store_from},   {STATE_TO_DATE_BOUNDARY, store_date},   {STATE_ERROR, NULL},                      {STATE_ERROR, NULL}},
-	/*11 STATE_FROM_TO_DATE */ 		   {{STATE_ERROR, NULL},                      {STATE_ERROR, NULL},                    {STATE_ERROR, NULL},                      {STATE_END, store_boundary}},
-	/*12 STATE_FROM_TO_BOUNDARY */ 	 {{STATE_ERROR, NULL},                      {STATE_ERROR, NULL},                    {STATE_END, store_date},                  {STATE_ERROR, NULL}},
-	/*13 STATE_FROM_DATE_BOUNDARY*/  {{STATE_ERROR, NULL},                      {STATE_END, store_to},                  {STATE_ERROR, NULL},                      {STATE_ERROR, NULL}},
-	/*14 STATE_TO_DATE_BOUNDARY */   {{STATE_END, NULL},                        {STATE_ERROR, NULL},                    {STATE_ERROR, NULL},                      {STATE_ERROR, NULL}},
+						               /*LEXEME_FROM                                                        LEXEME_TO
+														 LEXEME_DATE                                                  LEXEME_BOUNDARY */
+/*STATE_BEGIN*/              {{STATE_FROM, store_from},                               {STATE_TO, store_to},
+                             {STATE_DATE, store_date},                   {STATE_BOUNDARY, store_boundary}},
+
+/*STATE_FROM*/               {{STATE_ERROR, NULL},                               {STATE_FROM_TO, store_to},
+	                           {STATE_FROM_DATE, store_date},         {STATE_FROM_BOUNDARY, store_boundary}},
+
+/*STATE_TO*/                 {{STATE_FROM_TO, store_from},                             {STATE_ERROR, NULL},
+	                           {STATE_TO_DATE, store_date},             {STATE_TO_BOUNDARY, store_boundary}},
+
+/*STATE_DATE*/		           {{STATE_FROM_DATE, store_from},                     {STATE_TO_DATE, store_to},
+                             {STATE_ERROR, NULL},                   {STATE_DATE_BOUNDARY, store_boundary}},
+
+/*STATE_BOUNDARY*/           {{STATE_FROM_BOUNDARY, store_from},             {STATE_TO_BOUNDARY, store_to},
+	                           {STATE_DATE_BOUNDARY, store_date},                       {STATE_ERROR, NULL}},
+
+/*STATE_FROM_TO*/  			     {{STATE_ERROR, NULL},                                     {STATE_ERROR, NULL},
+	                           {STATE_FROM_TO_DATE, store_date},   {STATE_FROM_TO_BOUNDARY, store_boundary}},
+
+/*STATE_FROM_DATE*/			     {{STATE_ERROR, NULL},                          {STATE_FROM_TO_DATE, store_to},
+	                           {STATE_ERROR, NULL},              {STATE_FROM_DATE_BOUNDARY, store_boundary}},
+
+/*STATE_FROM_BOUNDARY*/		   {{STATE_ERROR, NULL},                      {STATE_FROM_TO_BOUNDARY, store_to},
+	                           {STATE_FROM_DATE_BOUNDARY, store_date},                  {STATE_ERROR, NULL}},
+
+/*STATE_TO_DATE*/ 			     {{STATE_FROM_TO_DATE, store_from},                        {STATE_ERROR, NULL},
+	                           {STATE_ERROR, NULL},                {STATE_TO_DATE_BOUNDARY, store_boundary}},
+
+/*STATE_TO_BOUNDARY*/ 		   {{STATE_FROM_TO_BOUNDARY, store_from},                    {STATE_ERROR, NULL},
+	                           {STATE_TO_DATE_BOUNDARY, store_date},                    {STATE_ERROR, NULL}},
+
+/*STATE_DATE_BOUNDARY*/ 	   {{STATE_FROM_DATE_BOUNDARY, store_from}, {STATE_TO_DATE_BOUNDARY, store_date},
+	                           {STATE_ERROR, NULL},                                     {STATE_ERROR, NULL}},
+
+/*STATE_FROM_TO_DATE*/ 		   {{STATE_ERROR, NULL},                                     {STATE_ERROR, NULL},
+	                           {STATE_ERROR, NULL},                             {STATE_END, store_boundary}},
+
+/*STATE_FROM_TO_BOUNDARY*/ 	 {{STATE_ERROR, NULL},                                     {STATE_ERROR, NULL},
+	                           {STATE_END, store_date},                                 {STATE_ERROR, NULL}},
+
+/*STATE_FROM_DATE_BOUNDARY*/ {{STATE_ERROR, NULL},                                   {STATE_END, store_to},
+	                           {STATE_ERROR, NULL},                                     {STATE_ERROR, NULL}},
+
+/*STATE_TO_DATE_BOUNDARY*/   {{STATE_END, NULL},                                       {STATE_ERROR, NULL},
+	                           {STATE_ERROR, NULL},                                     {STATE_ERROR, NULL}},
 };
 
 char* get_memory_from_file(const char* filename, size_t* length) {
@@ -100,7 +130,6 @@ char* get_memory_from_file(const char* filename, size_t* length) {
 	return file_in_memory;
 }
 
-
 void print_data(data_t data) {
 	if (data.from != NULL) {
 		printf("%s", data.from);
@@ -118,36 +147,12 @@ void print_data(data_t data) {
 	printf("|%zu\n", data.parts);
 }
 
-int parse_email(const char* filename, data_t* input_data) {
-	size_t length = 0;
-	char* file_in_memory = get_memory_from_file(filename, &length);
-	if (file_in_memory == NULL) {
-		return EXIT_FAILURE;
-	}
-
-	int has_body = 0, has_found_next_line = 0, has_found_empty_line = 0;
-	for (size_t i = 0; i < length; i++) {
-		if (has_found_empty_line == 1 && file_in_memory[i] != '\n' && file_in_memory[i] != '\r' &&
-			file_in_memory[i] != '\0' && file_in_memory[i] != 10) {
-				has_body = 1;
-				break;
-		}
-
-		if (has_found_next_line == 1 && (file_in_memory[i] == '\n' || file_in_memory[i] == '\r')) {
-			has_found_empty_line = 1;
-			has_body = 0;
-		}
-
-		has_found_next_line = 0;
-		if (file_in_memory[i] == '\n' || file_in_memory[i] == '\r') {
-			has_found_next_line = 1;
-		}
-	}
-
+int get_data(char* file_in_memory, data_t* input_data, int has_body) {
 	data_t data = {0};
 	lexeme_t lexeme;
 	state_t state = STATE_BEGIN;
 	rule_t rule = {17, NULL};
+
 	int has_found_boundary = 0, has_after_part = 0, has_parts_begin = 0;
 	char *saveptr1, *saveptr2, *new, *line = strtok_r(file_in_memory, "\n\r", &saveptr1);
 	while (line != NULL) {
@@ -270,6 +275,38 @@ int parse_email(const char* filename, data_t* input_data) {
 	}
 
 	*input_data = data;
+	return EXIT_SUCCESS;
+}
+
+int parse_email(const char* filename, data_t* input_data) {
+	size_t length = 0;
+	char* file_in_memory = get_memory_from_file(filename, &length);
+	if (file_in_memory == NULL) {
+		return EXIT_FAILURE;
+	}
+
+	int has_body = 0, has_found_next_line = 0, has_found_empty_line = 0;
+	for (size_t i = 0; i < length; i++) {
+		if (has_found_empty_line == 1 && file_in_memory[i] != '\n' && file_in_memory[i] != '\r' &&
+			file_in_memory[i] != '\0' && file_in_memory[i] != 10) {
+				has_body = 1;
+				break;
+		}
+
+		if (has_found_next_line == 1 && (file_in_memory[i] == '\n' || file_in_memory[i] == '\r')) {
+			has_found_empty_line = 1;
+			has_body = 0;
+		}
+
+		has_found_next_line = 0;
+		if (file_in_memory[i] == '\n' || file_in_memory[i] == '\r') {
+			has_found_next_line = 1;
+		}
+	}
+
+	if (get_data(file_in_memory, input_data, has_body) != EXIT_SUCCESS) {
+		return EXIT_FAILURE;
+	}
 
 	return EXIT_SUCCESS;
 }
