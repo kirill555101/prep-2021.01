@@ -17,7 +17,10 @@ int main(int argc, const char **argv) {
     }
 
     print_data(data);
+    if (free_data(&data) != EXIT_SUCCESS) {
+        fprintf(stderr, "FAILURE free_data");
+        return EXIT_FAILURE;
+    }
 
     return EXIT_SUCCESS;
 }
-

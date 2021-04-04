@@ -65,6 +65,6 @@ typedef struct {
 
 int parse_email(const char* filename, data_t* input_data);
 void print_data(data_t data);
+int free_data(data_t* data);
 
 #endif  // PROJECT_INCLUDE_PARSER_H_
-
