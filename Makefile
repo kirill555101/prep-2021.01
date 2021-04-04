@@ -2,11 +2,11 @@ TARGET = main.out
 
 # XXX: Don't forget backslash at the end of any line except the last one
 HDRS = \
-	   project/include
+			project/include
 
 SRCS = \
-       project/src/main.c \
-			 project/src/parser.c
+			project/src/main.c \
+			project/src/parser.c
 
 .PHONY: all clean
 
