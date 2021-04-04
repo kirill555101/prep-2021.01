@@ -69,46 +69,46 @@ rule_t syntax[STATE_COUNT][LEXEME_COUNT] = {
                              {STATE_DATE, store_date},                   {STATE_BOUNDARY, store_boundary}},
 
 /*STATE_FROM*/               {{STATE_ERROR, NULL},                               {STATE_FROM_TO, store_to},
-	                           {STATE_FROM_DATE, store_date},         {STATE_FROM_BOUNDARY, store_boundary}},
+                             {STATE_FROM_DATE, store_date},         {STATE_FROM_BOUNDARY, store_boundary}},
 
 /*STATE_TO*/                 {{STATE_FROM_TO, store_from},                             {STATE_ERROR, NULL},
-	                           {STATE_TO_DATE, store_date},             {STATE_TO_BOUNDARY, store_boundary}},
+                             {STATE_TO_DATE, store_date},             {STATE_TO_BOUNDARY, store_boundary}},
 
-/*STATE_DATE*/		           {{STATE_FROM_DATE, store_from},                     {STATE_TO_DATE, store_to},
+/*STATE_DATE*/               {{STATE_FROM_DATE, store_from},                     {STATE_TO_DATE, store_to},
                              {STATE_ERROR, NULL},                   {STATE_DATE_BOUNDARY, store_boundary}},
 
 /*STATE_BOUNDARY*/           {{STATE_FROM_BOUNDARY, store_from},             {STATE_TO_BOUNDARY, store_to},
-	                           {STATE_DATE_BOUNDARY, store_date},                       {STATE_ERROR, NULL}},
+                             {STATE_DATE_BOUNDARY, store_date},                       {STATE_ERROR, NULL}},
 
-/*STATE_FROM_TO*/  			     {{STATE_ERROR, NULL},                                     {STATE_ERROR, NULL},
-	                           {STATE_FROM_TO_DATE, store_date},   {STATE_FROM_TO_BOUNDARY, store_boundary}},
+/*STATE_FROM_TO*/            {{STATE_ERROR, NULL},                                     {STATE_ERROR, NULL},
+                             {STATE_FROM_TO_DATE, store_date},   {STATE_FROM_TO_BOUNDARY, store_boundary}},
 
-/*STATE_FROM_DATE*/			     {{STATE_ERROR, NULL},                          {STATE_FROM_TO_DATE, store_to},
-	                           {STATE_ERROR, NULL},              {STATE_FROM_DATE_BOUNDARY, store_boundary}},
+/*STATE_FROM_DATE*/          {{STATE_ERROR, NULL},                          {STATE_FROM_TO_DATE, store_to},
+                             {STATE_ERROR, NULL},              {STATE_FROM_DATE_BOUNDARY, store_boundary}},
 
-/*STATE_FROM_BOUNDARY*/		   {{STATE_ERROR, NULL},                      {STATE_FROM_TO_BOUNDARY, store_to},
-	                           {STATE_FROM_DATE_BOUNDARY, store_date},                  {STATE_ERROR, NULL}},
+/*STATE_FROM_BOUNDARY*/      {{STATE_ERROR, NULL},                      {STATE_FROM_TO_BOUNDARY, store_to},
+                             {STATE_FROM_DATE_BOUNDARY, store_date},                  {STATE_ERROR, NULL}},
 
-/*STATE_TO_DATE*/ 			     {{STATE_FROM_TO_DATE, store_from},                        {STATE_ERROR, NULL},
-	                           {STATE_ERROR, NULL},                {STATE_TO_DATE_BOUNDARY, store_boundary}},
+/*STATE_TO_DATE*/            {{STATE_FROM_TO_DATE, store_from},                        {STATE_ERROR, NULL},
+                             {STATE_ERROR, NULL},                {STATE_TO_DATE_BOUNDARY, store_boundary}},
 
-/*STATE_TO_BOUNDARY*/ 		   {{STATE_FROM_TO_BOUNDARY, store_from},                    {STATE_ERROR, NULL},
-	                           {STATE_TO_DATE_BOUNDARY, store_date},                    {STATE_ERROR, NULL}},
+/*STATE_TO_BOUNDARY*/        {{STATE_FROM_TO_BOUNDARY, store_from},                    {STATE_ERROR, NULL},
+                             {STATE_TO_DATE_BOUNDARY, store_date},                    {STATE_ERROR, NULL}},
 
-/*STATE_DATE_BOUNDARY*/ 	   {{STATE_FROM_DATE_BOUNDARY, store_from}, {STATE_TO_DATE_BOUNDARY, store_date},
-	                           {STATE_ERROR, NULL},                                     {STATE_ERROR, NULL}},
+/*STATE_DATE_BOUNDARY*/      {{STATE_FROM_DATE_BOUNDARY, store_from}, {STATE_TO_DATE_BOUNDARY, store_date},
+                             {STATE_ERROR, NULL},                                     {STATE_ERROR, NULL}},
 
-/*STATE_FROM_TO_DATE*/ 		   {{STATE_ERROR, NULL},                                     {STATE_ERROR, NULL},
-	                           {STATE_ERROR, NULL},                             {STATE_END, store_boundary}},
+/*STATE_FROM_TO_DATE*/       {{STATE_ERROR, NULL},                                     {STATE_ERROR, NULL},
+                             {STATE_ERROR, NULL},                             {STATE_END, store_boundary}},
 
-/*STATE_FROM_TO_BOUNDARY*/ 	 {{STATE_ERROR, NULL},                                     {STATE_ERROR, NULL},
-	                           {STATE_END, store_date},                                 {STATE_ERROR, NULL}},
+/*STATE_FROM_TO_BOUNDARY*/   {{STATE_ERROR, NULL},                                     {STATE_ERROR, NULL},
+                             {STATE_END, store_date},                                 {STATE_ERROR, NULL}},
 
 /*STATE_FROM_DATE_BOUNDARY*/ {{STATE_ERROR, NULL},                                   {STATE_END, store_to},
-	                           {STATE_ERROR, NULL},                                     {STATE_ERROR, NULL}},
+                             {STATE_ERROR, NULL},                                     {STATE_ERROR, NULL}},
 
 /*STATE_TO_DATE_BOUNDARY*/   {{STATE_END, NULL},                                       {STATE_ERROR, NULL},
-	                           {STATE_ERROR, NULL},                                     {STATE_ERROR, NULL}},
+                             {STATE_ERROR, NULL},                                     {STATE_ERROR, NULL}},
 };
 
 // Helpful functions
