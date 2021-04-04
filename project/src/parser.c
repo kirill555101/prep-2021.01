@@ -2,7 +2,7 @@
 
 #include "parser.h"
 
-// Store functions and state
+// Store functions and the state itself
 lexeme_t get_lexeme(char* line) {
 	if (strncasecmp(line, FROM_STR, strlen(FROM_STR)) == 0) {
 		return LEXEME_FROM;
@@ -111,47 +111,7 @@ rule_t syntax[STATE_COUNT][LEXEME_COUNT] = {
                              {STATE_ERROR, NULL},                                     {STATE_ERROR, NULL}},
 };
 
-// Helpful functions
-char* get_memory_from_file(const char* filename, size_t* length) {
-	int fd = open(filename, O_RDWR, S_IRUSR | S_IWUSR);
-	struct stat sb;
-
-	if (fstat(fd, &sb) == -1) {
-		close(fd);
-		return NULL;
-	}
-
-	char* file_in_memory = mmap(NULL, sb.st_size, PROT_READ | PROT_WRITE, MAP_PRIVATE, fd, 0);
-	if (file_in_memory == NULL) {
-		close(fd);
-		return NULL;
-	}
-
-	close(fd);
-	*length = sb.st_size;
-	return file_in_memory;
-}
-
-char* expand_str(const char* line, char* str) {
-	if (line == NULL || str == NULL) {
-		return NULL;
-	}
-
-	char* saveptr;
-	char* new = calloc(1, strlen(str) + strlen(line) + 1);
-	if (new == NULL) {
-		return NULL;
-	}
-
-	char* res = strtok_r(str, "\n\r", &saveptr);
-	strncat(new, res, strlen(res));
-	strncat(new, line, strlen(line));
-	strncpy(res, new, strlen(new) + 1);
-	free(new);
-
-	return res;
-}
-
+// Functions to check lexeme and state
 int is_from_lexeme(lexeme_t lexeme, state_t state) {
 	if (lexeme == LEXEME_FROM &&
 		state != STATE_FROM &&
@@ -199,21 +159,7 @@ int is_date_lexeme(lexeme_t lexeme, state_t state) {
 	return 0;
 }
 
-int is_rule_state_boundary(rule_t rule) {
-	if (rule.state == STATE_BOUNDARY ||
-		rule.state == STATE_FROM_BOUNDARY ||
-		rule.state == STATE_TO_BOUNDARY ||
-		rule.state == STATE_DATE_BOUNDARY ||
-		rule.state == STATE_FROM_TO_BOUNDARY ||
-		rule.state == STATE_FROM_DATE_BOUNDARY ||
-		rule.state == STATE_END) {
-			return 1;
-	}
-
-	return 0;
-}
-
-int is_state_boundary(state_t state) {
+int is_boundary_state(state_t state) {
 	if (state == STATE_BOUNDARY ||
 		state == STATE_FROM_BOUNDARY ||
 		state == STATE_DATE_BOUNDARY ||
@@ -225,6 +171,47 @@ int is_state_boundary(state_t state) {
 	}
 
 	return 0;
+}
+
+// Helpful functions
+char* get_memory_from_file(const char* filename, size_t* length) {
+	int fd = open(filename, O_RDONLY);
+	struct stat sb;
+
+	if (fstat(fd, &sb) == -1) {
+		close(fd);
+		return NULL;
+	}
+
+	char* file_in_memory = mmap(NULL, sb.st_size, PROT_READ | PROT_WRITE, MAP_PRIVATE, fd, 0);
+	if (file_in_memory == NULL) {
+		close(fd);
+		return NULL;
+	}
+
+	close(fd);
+	*length = sb.st_size;
+	return file_in_memory;
+}
+
+char* expand_str(const char* line, char* str) {
+	if (line == NULL || str == NULL) {
+		return NULL;
+	}
+
+	char* saveptr;
+	char* new = calloc(1, strlen(str) + strlen(line) + 1);
+	if (new == NULL) {
+		return NULL;
+	}
+
+	char* res = strtok_r(str, "\n\r", &saveptr);
+	strncat(new, res, strlen(res));
+	strncat(new, line, strlen(line));
+	strncpy(res, new, strlen(new) + 1);
+	free(new);
+
+	return res;
 }
 
 int expand_data(lexeme_t lexeme, state_t state, const char* line, data_t* data) {
@@ -291,11 +278,11 @@ int get_data(char* file_in_memory, data_t* input_data, int has_body) {
 				line = strtok_r(NULL, "\n\r", &saveptr);
 			}
 		}
-		if (!((is_rule_state_boundary(rule)) && data.boundary == NULL)) {
+		if (!((is_boundary_state(rule.state)) && data.boundary == NULL)) {
 			state = rule.state;
 		}
 
-		if (is_state_boundary(state)) {
+		if (is_boundary_state(state)) {
 			has_found_boundary = 1;
 		}
 	}
