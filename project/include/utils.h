@@ -1,10 +1,6 @@
 #ifndef PROJECT_INCLUDE_UTILS_H_
 #define PROJECT_INCLUDE_UTILS_H_
 
-#define TRANSACTION_FILENAME "transaction.dat"
-#define RECORD_FILENAME "record.dat"
-#define BLACKRECORD_FILENAME "blackrecord.dat"
-
 #include <stdio.h>
 #include <stdlib.h>
 
@@ -27,10 +23,11 @@ typedef struct {
 void print_menu();
 void print_about_client();
 void print_about_transfer();
-int master_write();
-int transaction_write();
-int black_record();
+int master_write(const char* filename);
+int transaction_write(const char* filename);
+int black_record(
+  const char* record_filename, const char* transaction_filename,
+  const char* blackrecord_filename
+);
 
 #endif  // PROJECT_INCLUDE_UTILS_H_
-
-

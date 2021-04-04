@@ -1,34 +1,21 @@
+#include <assert.h>
+
 #include "tests.h"
 
+#define TEST_RECORD_FILENAME "test_record.dat"
+#define TEST_TRANSACTION_FILENAME "test_transaction.dat"
+
 int main() {
-  Record first_struct = {
-    1, "Ivan", "Ivanov", "Moscow",
-    "8919000111", 300, 500, 100
-  };
-  Record second_struct = first_struct;
-  FILE* test_file = fopen(TEST_FILENAME, "w+");
+  // Test record read-write functions
+  assert(!test_write_record_to_file(TEST_RECORD_FILENAME));
+  assert(!test_read_record_from_file(TEST_RECORD_FILENAME));
 
-  int code;
-  if ((code = test_write_to_file(test_file)) != 0) {
-    puts("test1 FAILURE");
-    fclose(test_file);
-    return code;
-  }
-  puts("test1 SUCCESS");
+  // Test transaction read-write functions
+  assert(!test_write_transaction_to_file(TEST_TRANSACTION_FILENAME));
+  assert(!test_read_transaction_from_file(TEST_TRANSACTION_FILENAME));
 
-  rewind(test_file);
-  if ((code = test_read_from_file(test_file)) != 0) {
-    puts("test2 FAILURE");
-    fclose(test_file);
-    return code;
-  }
-  fclose(test_file);
-  puts("test2 SUCCESS");
+  // Test structs equal function
+  assert(!test_structs_equal());
 
-  if ((code = test_structs_equal(first_struct, second_struct)) != 0) {
-    puts("test3 FAILURE");
-    return code;
-  }
-  puts("test3 SUCCESS");
-  return 0;
+  return EXIT_SUCCESS;
 }

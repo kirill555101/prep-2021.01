@@ -1,8 +1,8 @@
 #include "work_with_file.h"
 
-void write_transaction_to_file(FILE *file, Transaction *transaction) {
+void write_transaction_to_file(FILE* file, Transaction* transaction) {
   if (file == NULL) {
-    exit(1);
+    return;
   }
 
   fprintf(file,
@@ -11,23 +11,23 @@ void write_transaction_to_file(FILE *file, Transaction *transaction) {
     transaction->cash_payments);
 }
 
-int read_transaction_from_file(FILE *file, Transaction *transaction) {
+int read_transaction_from_file(FILE* file, Transaction* transaction) {
   if (file == NULL) {
-    exit(1);
+    return EXIT_FAILURE;
   }
 
   while (fscanf(file,
       "%d %lf",
       &transaction->number,
       &transaction->cash_payments) == ELEMENTS_IN_TRANSACTION) {
-        return 0;
+        return EXIT_SUCCESS;
   }
-  return -1;
+  return EXIT_FAILURE;
 }
 
-void write_record_to_file(FILE *file, Record *record) {
+void write_record_to_file(FILE* file, Record* record) {
   if (file == NULL) {
-    exit(1);
+    return;
   }
 
   fprintf(file,
@@ -42,9 +42,9 @@ void write_record_to_file(FILE *file, Record *record) {
     record->cash_payments);
 }
 
-int read_record_from_file(FILE *file, Record *record) {
+int read_record_from_file(FILE *file, Record* record) {
   if (file == NULL) {
-    exit(1);
+    return EXIT_FAILURE;
   }
 
   while (fscanf(file,
@@ -57,7 +57,7 @@ int read_record_from_file(FILE *file, Record *record) {
       &record->indebtedness,
       &record->credit_limit,
       &record->cash_payments) == ELEMENTS_IN_RECORD) {
-        return 0;
+        return EXIT_SUCCESS;
   }
-  return -1;
+  return EXIT_FAILURE;
 }

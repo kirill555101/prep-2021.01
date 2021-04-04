@@ -26,10 +26,10 @@ void print_about_transfer() {
     "2 Client cash payments:\n");
 }
 
-int master_write(FILE *record_file) {
-  if (record_file == NULL) {
-    perror("record.dat ERROR");
-    return FILE_ERROR;
+int master_write(const char* filename) {
+  FILE* file = fopen(filename, "r+");
+  if (file == NULL) {
+    return EXIT_FAILURE;
   }
 
   Record client = {0};
@@ -43,53 +43,67 @@ int master_write(FILE *record_file) {
       &client.indebtedness,
       &client.credit_limit,
       &client.cash_payments) == ELEMENTS_IN_RECORD) {
-        write_record_to_file(record_file, &client);
+        write_record_to_file(file, &client);
         print_about_client();
   }
-  return 0;
+
+  fclose(file);
+  return EXIT_SUCCESS;
 }
 
-int transaction_write(FILE *transaction_file) {
-  if (transaction_file == NULL) {
-    perror("transaction.dat ERROR");
-    return FILE_ERROR;
-  }
+int transaction_write(const char* filename) {
+  FILE* file = fopen(filename, "r+");
+    if (file == NULL) {
+      perror("transaction.dat ERROR");
+      return EXIT_FAILURE;
+    }
 
   Transaction transfer = {0};
   print_about_transfer();
   while (scanf("%d %lf", &transfer.number, &transfer.cash_payments) == ELEMENTS_IN_TRANSACTION) {
-    write_transaction_to_file(transaction_file, &transfer);
+    write_transaction_to_file(file, &transfer);
     print_about_transfer();
   }
-  return 0;
+
+  fclose(file);
+  return EXIT_SUCCESS;
 }
 
-int black_record(FILE *record_file, FILE *transaction_file, FILE *black_record_file) {
-  if (record_file == NULL) {
-    perror("record.dat ERROR");
-    return FILE_ERROR;
-  }
-
-  if (transaction_file == NULL) {
-    perror("transaction.dat ERROR");
-    return FILE_ERROR;
-  }
-
-  if (black_record_file == NULL) {
-    perror("blackrecord.dat ERROR");
-    return FILE_ERROR;
-  }
-
-  Record client_data = {0};
-  Transaction transfer = {0};
-  while (read_record_from_file(record_file, &client_data) == 0) {
-    while (read_transaction_from_file(transaction_file, &transfer) == 0) {
-      if (client_data.number == transfer.number && transfer.cash_payments != 0) {
-        client_data.credit_limit += transfer.cash_payments;
-      }
+int black_record(
+  const char* record_filename, const char* transaction_filename,
+  const char* blackrecord_filename) {
+    FILE* record_file = fopen(record_filename, "r+");
+    if (record_file == NULL) {
+      return EXIT_FAILURE;
     }
-    rewind(transaction_file);
-    write_record_to_file(black_record_file, &client_data);
-  }
-  return 0;
+
+    FILE* transaction_file = fopen(transaction_filename, "r+");
+    if (transaction_file == NULL) {
+      fclose(record_file);
+      return EXIT_FAILURE;
+    }
+
+    FILE* blackrecord_file = fopen(blackrecord_filename, "w");
+    if (blackrecord_file == NULL) {
+      fclose(record_file);
+      fclose(transaction_file);
+      return EXIT_FAILURE;
+    }
+
+    Record client_data = {0};
+    Transaction transfer = {0};
+    while (read_record_from_file(record_file, &client_data) == 0) {
+      while (read_transaction_from_file(transaction_file, &transfer) == 0) {
+        if (client_data.number == transfer.number && transfer.cash_payments != 0) {
+          client_data.credit_limit += transfer.cash_payments;
+        }
+      }
+      rewind(transaction_file);
+      write_record_to_file(blackrecord_file, &client_data);
+    }
+
+    fclose(record_file);
+    fclose(transaction_file);
+    fclose(blackrecord_file);
+    return EXIT_SUCCESS;
 }
