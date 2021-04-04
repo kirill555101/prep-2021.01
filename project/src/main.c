@@ -24,7 +24,7 @@ int main(void) {
         }
         break;
       case UPDATE_BASE:
-        if (black_record(RECORD_FILENAME, TRANSACTION_FILENAME, BLACKRECORD_FILENAME) != EXIT_SUCCESS) {
+        if (blackrecord(RECORD_FILENAME, TRANSACTION_FILENAME, BLACKRECORD_FILENAME) != EXIT_SUCCESS) {
           return EXIT_FAILURE;
         }
         break;

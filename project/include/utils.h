@@ -25,7 +25,7 @@ void print_about_client();
 void print_about_transfer();
 int master_write(const char* filename);
 int transaction_write(const char* filename);
-int black_record(
+int blackrecord(
   const char* record_filename, const char* transaction_filename,
   const char* blackrecord_filename
 );

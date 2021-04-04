@@ -69,7 +69,7 @@ int transaction_write(const char* filename) {
   return EXIT_SUCCESS;
 }
 
-int black_record(
+int blackrecord(
   const char* record_filename, const char* transaction_filename,
   const char* blackrecord_filename) {
     FILE* record_file = fopen(record_filename, "r+");
