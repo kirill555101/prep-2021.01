@@ -227,7 +227,7 @@ int is_state_boundary(state_t state) {
 	return 0;
 }
 
-int change_data(lexeme_t lexeme, state_t state, const char* line, data_t* data) {
+int expand_data(lexeme_t lexeme, state_t state, const char* line, data_t* data) {
 	if (is_from_lexeme(lexeme, state)) {
 		if ((data->from = expand_str(line, data->from)) == NULL) {
 			return EXIT_FAILURE;
@@ -285,7 +285,7 @@ int get_data(char* file_in_memory, data_t* input_data, int has_body) {
 		line = strtok_r(NULL, "\n\r", &saveptr);
 		if (line != NULL && has_parts_begin == 0) {
 			while (line[0] == ' ' && lexeme < LEXEME_BOUNDARY) {
-				if (change_data(lexeme, state, line, &data) != EXIT_SUCCESS) {
+				if (expand_data(lexeme, state, line, &data) != EXIT_SUCCESS) {
 					return EXIT_FAILURE;
 				}
 				line = strtok_r(NULL, "\n\r", &saveptr);
