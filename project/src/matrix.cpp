@@ -176,23 +176,23 @@ namespace prep {
 
     int sign = 1;
     Matrix newMatrix = *this;
-    for (size_t i = 0, i_max = i; i < this->rows; ++i) {
-      i_max = i;
+    for (size_t i = 0, iMax = i; i < this->rows; ++i) {
+      iMax = i;
       for (size_t j = i + 1; j < this->rows; ++j) {
-        if (std::fabs(newMatrix.data[j][i]) > std::fabs(newMatrix.data[i_max][i])) {
-          i_max = j;
+        if (std::fabs(newMatrix.data[j][i]) > std::fabs(newMatrix.data[iMax][i])) {
+          iMax = j;
         }
       }
 
-      if (std::fabs(newMatrix.data[i_max][i]) < this->eps) {
+      if (std::fabs(newMatrix.data[iMax][i]) < this->eps) {
         return 0;
       }
 
       std::vector<double> temp = newMatrix.data[i];
-      newMatrix.data[i] = newMatrix.data[i_max];
-      newMatrix.data[i_max] = temp;
+      newMatrix.data[i] = newMatrix.data[iMax];
+      newMatrix.data[iMax] = temp;
 
-      sign = i != i_max ? -sign : sign;
+      sign = i != iMax ? -sign : sign;
 
       for (size_t j = i + 1; j < this->rows; ++j) {
         double mul_num = -newMatrix.data[j][i] / newMatrix.data[i][i];
@@ -231,13 +231,13 @@ namespace prep {
       throw DimensionMismatch(*this);
     }
 
-    Matrix adjointed_matrix = this->adj();
+    Matrix adjointedMatrix = this->adj();
     double det = this->det();
     if (std::fabs(det) < this->eps) {
       throw SingularMatrix();
     }
 
-    return adjointed_matrix * (1 / det);
+    return adjointedMatrix * (1 / det);
   }
 
   double Matrix::getMinor(size_t row, size_t col) const {
