@@ -40,7 +40,7 @@ class Matrix {
   Matrix inv() const;
 
  private:
-  double get_minor(size_t row, size_t col) const;
+  double getMinor(size_t row, size_t col) const;
   double eps = 1e-7;
   size_t rows;
   size_t cols;
