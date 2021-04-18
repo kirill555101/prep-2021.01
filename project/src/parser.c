@@ -2,212 +2,99 @@
 
 #include "parser.h"
 
-// Store functions and the state itself
-lexeme_t get_lexeme(char* line) {
+// Store function and the state itself
+lexeme_t get_lexeme(char* line, int* state) {
 	if (line == NULL) {
 		return LEXEME_NO;
 	}
 
-	if (strncasecmp(line, FROM_STR, strlen(FROM_STR)) == 0) {
+	if (state[STATE_FROM] == 0 && strncasecmp(line, FROM_STR, strlen(FROM_STR)) == 0) {
 		return LEXEME_FROM;
 	}
 
-	if (strncasecmp(line, TO_STR, strlen(TO_STR)) == 0) {
+	if (state[STATE_TO] == 0 && strncasecmp(line, TO_STR, strlen(TO_STR)) == 0) {
 		return LEXEME_TO;
 	}
 
-	if (strncasecmp(line, DATE_STR, strlen(DATE_STR)) == 0) {
+	if (state[STATE_DATE] == 0 && strncasecmp(line, DATE_STR, strlen(DATE_STR)) == 0) {
 		return LEXEME_DATE;
 	}
 
-	if (strcasestr(line, BOUNDARY_STR) != NULL) {
+	if (strncmp(line, CONTENT_TYPE_STR, strlen(CONTENT_TYPE_STR)) == 0) {
+		state[STATE_CONTENT_TYPE] = 1;
+	}
+
+	if (state[STATE_CONTENT_TYPE] == 1 && state[STATE_BOUNDARY] == 0 && strcasestr(line, BOUNDARY_STR) != NULL) {
+		state[STATE_CONTENT_TYPE] = 0;
 		return LEXEME_BOUNDARY;
 	}
 
 	return LEXEME_NO;
 }
 
-static char* store_args(char* line) {
-	if (line == NULL) {
-		return NULL;
-	}
-
-	char* save_ptr;
-	strtok_r(line, ":", &save_ptr);
-	char* res = strtok_r(NULL, "\r\n", &save_ptr);
-	return res + strspn(res, " ");
-}
-
-void store_from(char* line, data_t* data) {
+int store(char* line, data_t* data, lexeme_t lexeme, int* state) {
 	if (line == NULL || data == NULL) {
-		return;
+		return EXIT_FAILURE;
 	}
 
-	char* res = store_args(line);
-	if (res == NULL) {
-		return;
-	}
-	data->from = res;
-}
+	char *res, *save_ptr;
+	if (lexeme != LEXEME_BOUNDARY) {
+		strtok_r(line, ":", &save_ptr);
+		res = strtok_r(NULL, "\r\n", &save_ptr);
+		res = res + strspn(res, " ");
+		if (res == NULL) {
+			return EXIT_FAILURE;
+		}
+	} else {
+		res = strcasestr(line, BOUNDARY_STR);
+		if (res == NULL) {
+			return EXIT_FAILURE;
+		}
+		if (res != line) {
+			if ((*(res - 1) != ' ') && (*(res - 1) != '\t') && (*(res - 1) != ';')) {
+				return EXIT_SUCCESS;
+			}
+		}
 
-void store_to(char* line, data_t* data) {
-	if (line == NULL || data == NULL) {
-		return;
-	}
-
-	char* res = store_args(line);
-	if (res == NULL) {
-		return;
-	}
-	data->to = res;
-}
-
-void store_date(char* line, data_t* data) {
-	if (line == NULL || data == NULL) {
-		return;
-	}
-	char* res = store_args(line);
-	if (res == NULL) {
-		return;
-	}
-	data->date = res;
-}
-
-void store_boundary(char* line, data_t* data) {
-	if (line == NULL || data == NULL) {
-		return;
-	}
-
-	char* res = strcasestr(line, BOUNDARY_STR);
-	if (res == NULL) {
-		return;
-	}
-	if (strlen(res) != strlen(line)) {
-		if ((*(res - 1) != 32) && (*(res - 1) != '\t') && (*(res - 1) != ';')) {
-			return;
+		res = res + strlen(BOUNDARY_STR) + strspn(res, " ");
+		if (res[0] == '"') {
+			res++;
+			res = strtok_r(res, "\"", &save_ptr);
+		} else {
+			res = strtok_r(res, "\r\n ", &save_ptr);
 		}
 	}
 
-	res = res + strlen(BOUNDARY_STR) + strspn(res, " ");
-	char* save_ptr;
-	if (res[0] == '"') {
-		res++;
-		res = strtok_r(res, "\"", &save_ptr);
-	} else {
-		res = strtok_r(res, "\r\n ", &save_ptr);
-	}
-	data->boundary = res;
-}
-
-rule_t syntax[STATE_COUNT][LEXEME_COUNT] = {
-                           /*LEXEME_FROM                                                         LEXEME_TO
-                             LEXEME_DATE                                                   LEXEME_BOUNDARY*/
-/*STATE_BEGIN*/              {{STATE_FROM, store_from},                               {STATE_TO, store_to},
-                             {STATE_DATE, store_date},                   {STATE_BOUNDARY, store_boundary}},
-
-/*STATE_FROM*/               {{STATE_ERROR, NULL},                               {STATE_FROM_TO, store_to},
-                             {STATE_FROM_DATE, store_date},         {STATE_FROM_BOUNDARY, store_boundary}},
-
-/*STATE_TO*/                 {{STATE_FROM_TO, store_from},                             {STATE_ERROR, NULL},
-                             {STATE_TO_DATE, store_date},             {STATE_TO_BOUNDARY, store_boundary}},
-
-/*STATE_DATE*/               {{STATE_FROM_DATE, store_from},                     {STATE_TO_DATE, store_to},
-                             {STATE_ERROR, NULL},                   {STATE_DATE_BOUNDARY, store_boundary}},
-
-/*STATE_BOUNDARY*/           {{STATE_FROM_BOUNDARY, store_from},             {STATE_TO_BOUNDARY, store_to},
-                             {STATE_DATE_BOUNDARY, store_date},                       {STATE_ERROR, NULL}},
-
-/*STATE_FROM_TO*/            {{STATE_ERROR, NULL},                                     {STATE_ERROR, NULL},
-                             {STATE_FROM_TO_DATE, store_date},   {STATE_FROM_TO_BOUNDARY, store_boundary}},
-
-/*STATE_FROM_DATE*/          {{STATE_ERROR, NULL},                          {STATE_FROM_TO_DATE, store_to},
-                             {STATE_ERROR, NULL},              {STATE_FROM_DATE_BOUNDARY, store_boundary}},
-
-/*STATE_FROM_BOUNDARY*/      {{STATE_ERROR, NULL},                      {STATE_FROM_TO_BOUNDARY, store_to},
-                             {STATE_FROM_DATE_BOUNDARY, store_date},                  {STATE_ERROR, NULL}},
-
-/*STATE_TO_DATE*/            {{STATE_FROM_TO_DATE, store_from},                        {STATE_ERROR, NULL},
-                             {STATE_ERROR, NULL},                {STATE_TO_DATE_BOUNDARY, store_boundary}},
-
-/*STATE_TO_BOUNDARY*/        {{STATE_FROM_TO_BOUNDARY, store_from},                    {STATE_ERROR, NULL},
-                             {STATE_TO_DATE_BOUNDARY, store_date},                    {STATE_ERROR, NULL}},
-
-/*STATE_DATE_BOUNDARY*/      {{STATE_FROM_DATE_BOUNDARY, store_from}, {STATE_TO_DATE_BOUNDARY, store_date},
-                             {STATE_ERROR, NULL},                                     {STATE_ERROR, NULL}},
-
-/*STATE_FROM_TO_DATE*/       {{STATE_ERROR, NULL},                                     {STATE_ERROR, NULL},
-                             {STATE_ERROR, NULL},                             {STATE_END, store_boundary}},
-
-/*STATE_FROM_TO_BOUNDARY*/   {{STATE_ERROR, NULL},                                     {STATE_ERROR, NULL},
-                             {STATE_END, store_date},                                 {STATE_ERROR, NULL}},
-
-/*STATE_FROM_DATE_BOUNDARY*/ {{STATE_ERROR, NULL},                                   {STATE_END, store_to},
-                             {STATE_ERROR, NULL},                                     {STATE_ERROR, NULL}},
-
-/*STATE_TO_DATE_BOUNDARY*/   {{STATE_END, NULL},                                       {STATE_ERROR, NULL},
-                             {STATE_ERROR, NULL},                                     {STATE_ERROR, NULL}},
-};
-
-// Functions to check lexeme and state
-int is_from_lexeme(lexeme_t lexeme, state_t state) {
-	if (lexeme == LEXEME_FROM &&
-		state != STATE_FROM &&
-		state != STATE_FROM_TO &&
-		state != STATE_FROM_DATE &&
-		state != STATE_FROM_BOUNDARY &&
-		state != STATE_FROM_TO_DATE &&
-		state != STATE_FROM_TO_BOUNDARY &&
-		state != STATE_FROM_DATE_BOUNDARY &&
-		state != STATE_END) {
-			return 1;
+	switch (lexeme) {
+		case LEXEME_FROM:
+			if(state[STATE_FROM] == 0) {
+				data->from = res;
+				state[STATE_FROM] = 1;
+			}
+			break;
+		case LEXEME_TO:
+			if(state[STATE_TO] == 0) {
+				data->to = res;
+				state[STATE_TO] = 1;
+			}
+			break;
+		case LEXEME_DATE:
+			if(state[STATE_DATE] == 0) {
+				data->date = res;
+				state[STATE_DATE] = 1;
+			}
+			break;
+		case LEXEME_BOUNDARY:
+			if(state[STATE_BOUNDARY] == 0) {
+				data->boundary = res;
+				state[STATE_BOUNDARY] = 1;
+			}
+			break;
+		default:
+			break;
 	}
 
-	return 0;
-}
-
-int is_to_lexeme(lexeme_t lexeme, state_t state) {
-	if (lexeme == LEXEME_TO &&
-		state != STATE_TO &&
-		state != STATE_FROM_TO &&
-		state != STATE_TO_DATE &&
-		state != STATE_TO_BOUNDARY &&
-		state != STATE_FROM_TO_DATE &&
-		state != STATE_TO_DATE_BOUNDARY &&
-		state != STATE_END) {
-			return 1;
-	}
-
-	return 0;
-}
-
-int is_date_lexeme(lexeme_t lexeme, state_t state) {
-	if (lexeme == LEXEME_DATE &&
-		state != STATE_DATE &&
-		state != STATE_FROM_DATE &&
-		state != STATE_TO_DATE &&
-		state != STATE_DATE_BOUNDARY &&
-		state != STATE_FROM_TO_DATE &&
-		state != STATE_FROM_DATE_BOUNDARY &&
-		state != STATE_TO_DATE_BOUNDARY &&
-		state != STATE_END) {
-			return 1;
-	}
-
-	return 0;
-}
-
-int is_boundary_state(state_t state) {
-	if (state == STATE_BOUNDARY ||
-		state == STATE_FROM_BOUNDARY ||
-		state == STATE_DATE_BOUNDARY ||
-		state == STATE_FROM_TO_BOUNDARY ||
-		state == STATE_FROM_DATE_BOUNDARY ||
-		state == STATE_TO_DATE_BOUNDARY ||
-		state == STATE_END) {
-			return 1;
-	}
-
-	return 0;
+	return EXIT_SUCCESS;
 }
 
 // Helpful functions
@@ -254,27 +141,23 @@ char* expand_str(const char* line, char* str) {
 	return res;
 }
 
-int expand_data(lexeme_t lexeme, state_t state, const char* line, data_t* data) {
+int expand_data(lexeme_t lexeme, const char* line, data_t* data) {
 	if (line == NULL || data == NULL) {
 		return EXIT_FAILURE;
 	}
 
-	if (is_from_lexeme(lexeme, state)) {
-		if ((data->from = expand_str(line, data->from)) == NULL) {
-			return EXIT_FAILURE;
-		}
-	}
-
-	if (is_to_lexeme(lexeme, state)) {
-		if ((data->to = expand_str(line, data->to)) == NULL) {
-			return EXIT_FAILURE;
-		}
-	}
-
-	if (is_date_lexeme(lexeme, state)) {
-		if ((data->date = expand_str(line, data->date)) == NULL) {
-			return EXIT_FAILURE;
-		}
+	switch (lexeme) {
+		case LEXEME_FROM:
+			data->from = expand_str(line, data->from);
+			break;
+		case LEXEME_TO:
+			data->to = expand_str(line, data->to);
+			break;
+		case LEXEME_DATE:
+			data->date = expand_str(line, data->date);
+			break;
+		default:
+			break;
 	}
 
 	return EXIT_SUCCESS;
@@ -327,22 +210,26 @@ int get_data(const char* given_file_in_memory, data_t* input_data, int has_body)
 
 	data_t data = {0};
 	lexeme_t lexeme;
-	state_t state = STATE_BEGIN;
-	rule_t rule = {17, NULL};
+	int state[STATE_COUNT] = {0};
 
-	int has_found_boundary = 0, has_after_part = 0, has_parts_begin = 0;
+	int has_found_boundary = 0, has_after_part = 0, has_parts_begin = 0, has_body_begin = 0;
 	char *save_ptr, *line = strtok_r(file_in_memory, "\n\r", &save_ptr);
 	while (line != NULL) {
-		lexeme = get_lexeme(line);
-		if (state < STATE_COUNT && lexeme < LEXEME_COUNT) {
-			rule = syntax[state][lexeme];
+		lexeme = get_lexeme(line, state);
+
+		if (lexeme < LEXEME_COUNT) {
+			if (store(line, &data, lexeme, state) != EXIT_SUCCESS) {
+				free(file_in_memory);
+				return EXIT_FAILURE;
+			}
 		}
 
-		if (state != STATE_END && state != STATE_ERROR && (lexeme < LEXEME_COUNT) && rule.action) {
-			rule.action(line, &data);
+		if (has_body == 1 && strchr(line, ':') == NULL && line[0] != ' ') {
+			has_body_begin = 1;
 		}
-		if (has_found_boundary == 1) {
-			if (strstr(line, data.boundary) != NULL) {
+
+		if (has_body_begin == 1 && has_found_boundary == 1) {
+			if (data.boundary != NULL && strstr(line, data.boundary) != NULL) {
 				has_parts_begin = 1;
 				has_after_part = 0;
 				data.parts++;
@@ -357,21 +244,19 @@ int get_data(const char* given_file_in_memory, data_t* input_data, int has_body)
 				continue;
 			}
 		}
+
 		line = strtok_r(NULL, "\n\r", &save_ptr);
 		if (line != NULL && has_parts_begin == 0) {
 			while (line[0] == ' ' && lexeme < LEXEME_BOUNDARY) {
-				if (expand_data(lexeme, state, line, &data) != EXIT_SUCCESS) {
+				if (expand_data(lexeme, line, &data) != EXIT_SUCCESS) {
 					free(file_in_memory);
 					return EXIT_FAILURE;
 				}
 				line = strtok_r(NULL, "\n\r", &save_ptr);
 			}
 		}
-		if (!((is_boundary_state(rule.state)) && data.boundary == NULL)) {
-			state = rule.state;
-		}
 
-		if (is_boundary_state(state)) {
+		if (lexeme == LEXEME_BOUNDARY) {
 			has_found_boundary = 1;
 		}
 	}
@@ -405,9 +290,9 @@ int parse_email(const char* filename, data_t* input_data) {
 	}
 
 	int has_body = 0, has_found_next_line = 0, has_found_empty_line = 0;
-	for (size_t i = 0; i < length; i++) {
-		if (has_found_empty_line == 1 && file_in_memory[i] != '\n' && file_in_memory[i] != '\r' &&
-			file_in_memory[i] != '\0' && file_in_memory[i] != 10) {
+	for (size_t i = 0; i < length; ++i) {
+		if (has_found_empty_line == 1 && file_in_memory[i] != '\n' &&
+			file_in_memory[i] != '\r' && file_in_memory[i] != '\0') {
 				has_body = 1;
 				break;
 		}

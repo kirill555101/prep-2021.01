@@ -11,32 +11,19 @@
 #include <stdlib.h>
 #include <ctype.h>
 
-#define LINE_SIZE 4096
-
-#define FROM_STR "from:"
-#define TO_STR "to:"
-#define DATE_STR "date:"
+#define FROM_STR "From:"
+#define TO_STR "To:"
+#define DATE_STR "Date:"
+#define CONTENT_TYPE_STR "Content-Type:"
 #define BOUNDARY_STR "boundary="
 
 typedef enum {
-	STATE_BEGIN,
 	STATE_FROM,
 	STATE_TO,
 	STATE_DATE,
+	STATE_CONTENT_TYPE,
 	STATE_BOUNDARY,
-	STATE_FROM_TO,
-	STATE_FROM_DATE,
-	STATE_FROM_BOUNDARY,
-	STATE_TO_DATE,
-	STATE_TO_BOUNDARY,
-	STATE_DATE_BOUNDARY,
-	STATE_FROM_TO_DATE,
-	STATE_FROM_TO_BOUNDARY,
-	STATE_FROM_DATE_BOUNDARY,
-	STATE_TO_DATE_BOUNDARY,
 	STATE_COUNT,
-	STATE_ERROR,
-	STATE_END
 } state_t;
 
 typedef enum {
@@ -55,13 +42,6 @@ typedef struct {
 	char* boundary;
 	size_t parts;
 } data_t;
-
-typedef void (*action_t)(char* line, data_t *data);
-
-typedef struct {
-	state_t state;
-	action_t action;
-} rule_t;
 
 int parse_email(const char* filename, data_t* input_data);
 void print_data(data_t data);
