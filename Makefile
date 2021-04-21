@@ -2,10 +2,15 @@ TARGET = main.out
 
 # XXX: Don't forget backslash at the end of any line except the last one
 HDRS = \
-	   project/include
+			project/include
 
 SRCS = \
-       project/src/main.cpp
+			project/src/game.cpp \
+			project/src/enemy.cpp \
+			project/src/map.cpp \
+			project/src/player.cpp \
+			project/src/clothes.cpp \
+			project/src/main.cpp
 
 .PHONY: all clean
 
