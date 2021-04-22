@@ -2,6 +2,8 @@
 
 #include <vector>
 #include <istream>
+#include <cmath>
+#include <iomanip>
 
 namespace prep {
 class Matrix {
@@ -36,6 +38,13 @@ class Matrix {
   double det() const;
   Matrix adj() const;
   Matrix inv() const;
+
+ private:
+  double getMinor(size_t row, size_t col) const;
+  double eps = 1e-7;
+  size_t rows;
+  size_t cols;
+  std::vector<std::vector<double>> data;
 };
 
 Matrix operator*(double val, const Matrix& matrix);
