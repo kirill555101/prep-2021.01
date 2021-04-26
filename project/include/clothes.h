@@ -4,7 +4,8 @@
 #include <string>
 #include <iostream>
 
-enum ClothesWeight {
+enum class ClothesWeight {
+    none_weight = 0,
     armor_weight = 3,
     helmet_weight = 2,
     shield_weight = 7,
@@ -12,7 +13,8 @@ enum ClothesWeight {
     T_Shirt_weight = 1
 };
 
-enum ClothesArmor {
+enum class ClothesArmor {
+    none_armor = 0,
     armor_armor = 3,
     helmet_armor = 3,
     shield_armor = 5,
@@ -23,8 +25,7 @@ enum ClothesArmor {
 class Clothes {
  public:
     Clothes() = default;
-    Clothes(int weight, int armor);
-    ~Clothes() = default;
+    Clothes(ClothesWeight weight, ClothesArmor armor);
 
     void set_found_clothes(bool value);
     void set_put_on_player(bool value);
@@ -32,14 +33,14 @@ class Clothes {
     bool get_found_clothes() const;
     bool get_put_on_player() const;
 
-    int get_weight() const;
-    int get_armor() const;
+    ClothesWeight get_weight() const;
+    ClothesArmor get_armor() const;
 
     void print_status_clothes(const std::map<std::string, Clothes>& clothes) const;
 
  private:
     bool put_on_player = false;
     bool found_clothes = false;
-    int weight;
-    int armor;
+    ClothesWeight weight = ClothesWeight::none_weight;
+    ClothesArmor armor = ClothesArmor::none_armor;
 };

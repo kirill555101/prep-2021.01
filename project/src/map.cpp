@@ -10,7 +10,8 @@ Map::Map(const std::string& file_name) {
     file >> rows >> cols;
 
     std::string object;
-    size_t x, y, type_object;
+    size_t x, y;
+    ObjectFound type_object;
 
     while (!file.eof()) {
         x = 0;
@@ -20,25 +21,25 @@ Map::Map(const std::string& file_name) {
             break;
         }
 
-        type_object = 0;
+        type_object = ObjectFound::none_found;
         file >> object;
 
         if (object == "wolf") {
-            type_object = wolf_found;
+            type_object = ObjectFound::wolf_found;
         } else if (object == "dog") {
-            type_object = dog_found;
+            type_object = ObjectFound::dog_found;
         } else if (object == "rat") {
-            type_object = rat_found;
+            type_object = ObjectFound::rat_found;
         } else if (object == "armor") {
-            type_object = armor_found;
+            type_object = ObjectFound::armor_found;
         } else if (object == "helmet") {
-            type_object = helmet_found;
+            type_object = ObjectFound::helmet_found;
         } else if (object == "shield") {
-            type_object = shield_found;
+            type_object = ObjectFound::shield_found;
         } else if (object == "pants") {
-            type_object = pants_found;
+            type_object = ObjectFound::pants_found;
         } else if (object == "T-Shirt") {
-            type_object = T_Shirt_found;
+            type_object = ObjectFound::T_Shirt_found;
         }
 
         field.push_back({x, y, type_object});
@@ -46,7 +47,7 @@ Map::Map(const std::string& file_name) {
     file.close();
 }
 
-void Map::check_status(Move& move) const {
+void Map::recalculate_move_directions(Move& move) const {
     if (pos.x > 0) {
         move.left = true;
         std::cout << "\n * move left";
@@ -88,9 +89,9 @@ void Map::delete_object() {
     }
 }
 
-int Map::find_object() const {
+ObjectFound Map::find_object() const {
     if (pos.x > rows || pos.y > cols) {
-        return 0;
+        return ObjectFound::none_found;
     }
 
     for (size_t i = 0; i < field.size(); i++) {
@@ -99,7 +100,7 @@ int Map::find_object() const {
         }
     }
 
-    return 0;
+    return ObjectFound::none_found;
 }
 
 size_t Map::get_pos_x() const {

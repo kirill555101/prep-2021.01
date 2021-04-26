@@ -9,8 +9,9 @@
 #include "clothes.h"
 #include "enemy.h"
 
-enum ObjectFound {
-    wolf_found = 1,
+enum class ObjectFound {
+    none_found,
+    wolf_found,
     dog_found,
     rat_found,
     armor_found,
@@ -23,7 +24,7 @@ enum ObjectFound {
 struct Field {
     size_t x;
     size_t y;
-    size_t type_object;
+    ObjectFound type_object;
 };
 
 struct PlayerPosition {
@@ -42,11 +43,10 @@ class Map {
  public:
     Map() = default;
     explicit Map(const std::string& file_name);
-    ~Map() = default;
 
-    void check_status(Move& move) const;
+    void recalculate_move_directions(Move& move) const;
     void delete_object();
-    int find_object() const;
+    ObjectFound find_object() const;
 
     size_t get_pos_x() const;
     size_t get_pos_y() const;

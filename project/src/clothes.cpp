@@ -1,6 +1,6 @@
 #include "clothes.h"
 
-Clothes::Clothes(int weight, int armor) : weight(weight), armor(armor) { }
+Clothes::Clothes(ClothesWeight weight, ClothesArmor armor) : weight(weight), armor(armor) { }
 
 bool Clothes::get_found_clothes() const {
     return found_clothes;
@@ -18,11 +18,11 @@ void Clothes::set_found_clothes(bool value) {
     found_clothes = value;
 }
 
-int Clothes::get_weight() const {
+ClothesWeight Clothes::get_weight() const {
     return weight;
 }
 
-int Clothes::get_armor() const {
+ClothesArmor Clothes::get_armor() const {
     return armor;
 }
 
